@@ -3,1122 +3,307 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="An AP Psychology study game for 13 neurotransmitters and hormones.">
+<meta name="description" content="Read the clues and guess the brain chemical. An AP Psychology detective game.">
 <title>Neural Night Shift</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@300;400;500;600&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans+Condensed:wght@400;600&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
 <style>
-/* Layout: a quiet night-lab console. One centered column of "case files", a thin instrument bar on top, mono readouts for data. */
+/* Layout: one centered column, one thing to do per screen. */
 :root{
-  color-scheme: dark;
-  --bg:#0c0e13;          /* almost-black, navy bias */
-  --bg2:#10141c;
-  --panel:#151a24;       /* charcoal-navy surfaces */
-  --panel2:#1b2130;
-  --line:#2a3242;
-  --line2:#36405400;
-  --ink:#ebe6da;         /* warm off-white */
-  --ink2:#b9b6ad;
-  --muted:#7f8798;
-  --blue:#8aa3c8;        /* muted blue: signals, focus */
-  --violet:#a092c4;      /* muted purple: hormones */
-  --sage:#93b79d;        /* correct */
-  --sage-bg:#93b79d1a;
-  --rust:#c98466;        /* not quite */
-  --rust-bg:#c984661a;
-  --amber:#c9a46a;       /* stars, small accents */
+  color-scheme:dark;
+  --bg:#10131a;
+  --panel:#1a2030;
+  --panel2:#222a3d;
+  --line:#34405a;
+  --ink:#f3efe6;
+  --ink2:#c9c6be;
+  --muted:#9aa2b4;
+  --blue:#9db6dc;
+  --sage:#9fd0ac;
+  --sage-bg:#9fd0ac22;
+  --rust:#e39a7a;
+  --rust-bg:#e39a7a22;
+  --amber:#e6be7a;
   --f-display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
   --f-body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --f-mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
-  --r:10px;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-::selection{background:#8aa3c855;color:var(--ink)}
-html{scrollbar-color:var(--line) var(--bg);accent-color:var(--blue);font-variant-numeric:tabular-nums}
-html,body{background:var(--bg);color:var(--ink)}
-body{font-family:var(--f-body);font-size:16px;line-height:1.55;margin:0;
-  background:radial-gradient(1200px 600px at 50% -200px,#1a2133 0%,transparent 70%),var(--bg);min-height:100%}
+::selection{background:#9db6dc55}
+html,body{background:var(--bg);color:var(--ink);margin:0}
+body{font-family:var(--f-body);font-size:18px;line-height:1.5;
+  background:radial-gradient(900px 500px at 50% -150px,#22304a 0%,transparent 70%),var(--bg);min-height:100vh}
 button{font:inherit;color:inherit;cursor:pointer}
-:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
-.mono{font-family:var(--f-mono)}
-.label{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+main{max-width:640px;margin:0 auto;padding:32px 16px 64px;display:grid;gap:22px}
 
-/* ---------- top bar ---------- */
-.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:#0c0e13e6;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
-.top-in{max-width:1040px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.brand{font-family:var(--f-display);font-weight:500;letter-spacing:.22em;font-size:13px;background:none;border:0;padding:4px 0;color:var(--ink);white-space:nowrap}
-.brand i{font-style:normal;color:var(--blue)}
-.nav{display:flex;gap:4px;flex-wrap:wrap}
-.nav button{background:none;border:1px solid transparent;border-radius:6px;padding:6px 10px;font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;color:var(--ink2)}
-.nav button:hover{color:var(--ink);border-color:var(--line)}
-.nav button[aria-current="page"]{color:var(--ink);border-color:var(--line);background:var(--panel)}
-.prog{margin-left:auto;display:flex;align-items:center;gap:12px}
-.prog-txt{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;color:var(--ink2);text-align:right;line-height:1.3}
-.prog-txt b{color:var(--ink);font-weight:500}
-.prog-txt span{display:block;color:var(--muted)}
-.snd{background:none;border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;color:var(--muted)}
-.bar{height:2px;background:var(--line);position:relative}
-.bar i{position:absolute;inset:0;width:100%!important;background:linear-gradient(90deg,var(--blue),var(--sage));transform-origin:left;transform:scaleX(var(--p,0));transition:transform .5s cubic-bezier(.16,1,.3,1)}
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:18px 20px;font-family:var(--f-display);font-weight:600;font-size:22px;letter-spacing:.06em;text-transform:uppercase;background:var(--ink);color:#10131a;transition:transform .08s,background .15s}
+.btn:hover{background:#fff}
+.btn:active{transform:scale(.98)}
+.btn.soft{background:var(--panel);color:var(--ink);border:2px solid var(--line);font-size:18px}
+.btn.soft:hover{border-color:var(--blue)}
 
-main{max-width:1040px;margin:0 auto;padding:28px 16px 64px}
+/* start */
+.title{font-family:var(--f-display);font-weight:600;font-size:clamp(44px,12vw,76px);line-height:.95;letter-spacing:.04em;margin:24px 0 0;text-wrap:balance}
+.title span{font-weight:400;color:var(--blue)}
+.lead{font-size:22px;margin:0;color:var(--ink)}
+.steps{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.steps li{display:flex;gap:14px;align-items:center;background:var(--panel);border-radius:12px;padding:14px 16px;font-size:18px}
+.steps b{flex:none;width:34px;height:34px;border-radius:50%;background:var(--panel2);display:grid;place-items:center;font-family:var(--f-mono);font-size:16px;color:var(--blue)}
+.best{text-align:center;color:var(--muted);font-size:16px;margin:0}
 
-/* ---------- home ---------- */
-.home{display:grid;gap:28px;padding-block:24px 8px;text-align:left}
-.scope{width:100%;height:86px;display:block;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:
-  repeating-linear-gradient(90deg,transparent 0 39px,#ffffff08 39px 40px)}
-.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.18em;color:var(--blue)}
-h1.title{font-family:var(--f-display);font-weight:300;font-size:clamp(40px,9vw,92px);letter-spacing:.06em;line-height:.95;margin:6px 0 0;text-wrap:balance}
-h1.title b{font-weight:600}
-.sub{font-family:var(--f-display);font-size:clamp(18px,2.6vw,24px);color:var(--ink2);margin:10px 0 0;font-weight:300;letter-spacing:.02em}
-.desc{max-width:58ch;color:var(--ink2);margin:0}
-.cta{display:flex;gap:10px;flex-wrap:wrap}
-.btn{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:12px 18px;font-family:var(--f-mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);transition:border-color .15s,background .15s}
-.btn:hover{border-color:var(--blue)}
-.btn.primary{background:var(--ink);color:#0c0e13;border-color:var(--ink)}
-.btn.primary:hover{background:#fff}
-.btn.ghost{background:none}
-.btn.small{padding:8px 12px;font-size:11px}
-.btn.danger{border-color:#c9846655;color:var(--rust);background:none}
-.home-meta{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;border-top:1px solid var(--line);padding-top:16px}
-.mastery-strip{display:flex;gap:4px;flex-wrap:wrap}
-.mastery-strip i{width:22px;height:8px;border-radius:2px;background:var(--line)}
-.mastery-strip i.learning{background:#8aa3c866}
-.mastery-strip i.mastered{background:var(--sage)}
-.foot{font-family:var(--f-mono);font-size:11px;letter-spacing:.2em;color:var(--muted);text-align:center;margin-top:40px}
-
-/* ---------- headings ---------- */
-.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px}
-.ph h2{font-family:var(--f-display);font-weight:400;letter-spacing:.08em;font-size:clamp(24px,4vw,34px);margin:4px 0 0;text-transform:uppercase;text-wrap:balance}
-.ph p{margin:6px 0 0;color:var(--ink2);max-width:60ch}
-
-/* ---------- hub ---------- */
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex-wrap:wrap}
-.seg button{background:none;border:0;padding:9px 14px;font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;color:var(--ink2)}
-.seg button[aria-pressed="true"]{background:var(--panel2);color:var(--ink)}
-.seg button+button{border-left:1px solid var(--line)}
-.diffnote{font-size:14px;color:var(--muted);margin:8px 0 0}
-.modes{display:grid;gap:0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--panel)}
-.mode{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;padding:16px 18px;background:none;border:0;border-top:1px solid var(--line);text-align:left;width:100%}
-.mode:first-child{border-top:0}
-.mode:hover{background:var(--panel2)}
-.mode .k{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
-.mode h3{margin:0;font-family:var(--f-display);font-weight:500;letter-spacing:.08em;font-size:17px;text-transform:uppercase}
-.mode p{margin:2px 0 0;color:var(--ink2);font-size:14px}
-.mode .tag{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:3px 6px;white-space:nowrap}
-.mode.featured h3{color:var(--ink)}
-.mode.featured .k{color:var(--blue)}
-.hub-grid{display:grid;gap:20px}
-.callout{border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap;background:var(--bg2)}
-.callout p{margin:0;color:var(--ink2);font-size:14px}
-
-/* ---------- case ---------- */
-.case{max-width:720px;margin:0 auto;display:grid;gap:18px}
-.case-head{display:flex;gap:10px 18px;flex-wrap:wrap;align-items:center;font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
-.case-head .no{color:var(--ink)}
-.case-head .sp{margin-left:auto}
-.case-head button{background:none;border:0;color:var(--muted);font:inherit;letter-spacing:inherit;padding:0}
-.case-head button:hover{color:var(--ink)}
-.pips{display:flex;gap:3px}
-.pips i{width:14px;height:3px;background:var(--line);border-radius:2px}
-.pips i.ok{background:var(--sage)}.pips i.no{background:var(--rust)}.pips i.cur{background:var(--ink2)}
-.prompt{font-family:var(--f-display);font-weight:400;font-size:clamp(20px,3.4vw,27px);line-height:1.32;margin:0;text-wrap:pretty}
-.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.opt{display:flex;align-items:center;gap:12px;min-height:58px;padding:12px 16px;border:1px solid var(--line);background:var(--panel);border-radius:9px;text-align:left;font-size:16px;transition:border-color .12s,background .12s,transform .08s}
-.opt:hover:not(:disabled){border-color:var(--blue);background:var(--panel2)}
-.opt:active:not(:disabled){transform:scale(.99)}
-.opt .n{font-family:var(--f-mono);font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:4px;width:22px;height:22px;display:grid;place-items:center;flex:none}
+/* game */
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;font-family:var(--f-mono);font-size:15px;color:var(--ink2)}
+.top .stars{color:var(--amber)}
+.track{height:6px;border-radius:3px;background:var(--panel2);overflow:hidden}
+.track i{display:block;height:100%;width:100%;background:var(--blue);transform-origin:left;transform:scaleX(var(--p,0));transition:transform .4s cubic-bezier(.16,1,.3,1)}
+h2{font-family:var(--f-display);font-weight:600;font-size:30px;margin:0;letter-spacing:.02em}
+.clues{display:grid;gap:10px}
+.clue{background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:14px 16px;animation:pop .25s ease-out}
+.clue small{display:block;font-family:var(--f-mono);font-size:13px;color:var(--blue);letter-spacing:.1em;margin-bottom:2px}
+.clue p{margin:0;font-size:21px}
+@keyframes pop{from{transform:translateY(6px);opacity:.3}to{transform:none;opacity:1}}
+.more{width:100%;border:2px dashed var(--line);background:none;border-radius:12px;padding:14px 16px;font-size:18px;color:var(--blue);font-weight:700}
+.more:hover{border-color:var(--blue)}
+.worth{text-align:center;margin:0;color:var(--ink2);font-size:16px}
+.worth b{color:var(--amber);letter-spacing:.1em}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.opt{min-height:68px;border:2px solid var(--line);background:var(--panel2);border-radius:14px;font-size:21px;font-weight:700;padding:10px;transition:border-color .12s,background .12s}
+.opt:hover:not(:disabled){border-color:var(--blue)}
 .opt:disabled{cursor:default}
-.opt.right{border-color:var(--sage);background:var(--sage-bg)}
-.opt.right .n{border-color:var(--sage);color:var(--sage)}
-.opt.wrong{border-color:var(--rust);background:var(--rust-bg)}
-.opt.wrong .n{border-color:var(--rust);color:var(--rust)}
-.opt.dim{opacity:.45}
-.opt .lab{min-width:0}
+.opt.right{border-color:var(--sage);background:var(--sage-bg);color:var(--sage)}
+.opt.wrong{border-color:var(--rust);background:var(--rust-bg);color:var(--rust)}
+.opt.dim{opacity:.4}
 
-/* reveal */
-.reveal{border:1px solid var(--line);border-radius:var(--r);background:var(--panel);overflow:hidden;animation:rise .22s ease-out}
-@keyframes rise{from{transform:translateY(6px);opacity:.4}to{transform:none;opacity:1}}
-.rv-head{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap}
-.rv-head h3{margin:0;font-family:var(--f-display);font-weight:600;letter-spacing:.12em;font-size:22px;text-transform:uppercase}
-.rv-head.ok h3{color:var(--sage)}
-.rv-head.no h3{color:var(--rust)}
-.rv-head .note{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase}
-.miss{padding:16px 18px;border-bottom:1px solid var(--line);background:var(--rust-bg);display:grid;gap:8px}
-.miss p{margin:0}
-.remember{font-family:var(--f-mono);font-size:13px;letter-spacing:.06em;color:var(--ink);background:#0c0e1380;border:1px dashed var(--line);border-radius:6px;padding:8px 10px}
-.remember span{color:var(--muted);font-size:11px;letter-spacing:.14em;display:block;margin-bottom:2px}
-.profile{display:grid;grid-template-columns:132px 1fr;margin:0}
-.profile dt,.profile dd{padding:10px 18px;border-top:1px solid var(--line);margin:0}
-.profile dt:first-of-type,.profile dd:first-of-type{border-top:0}
-.profile dt{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;color:var(--muted);padding-top:13px}
-.profile dd{color:var(--ink);min-width:0}
-.profile dd.memory{font-family:var(--f-mono);color:var(--amber)}
-.profile .flow{color:var(--muted);font-size:13px;display:block;margin-top:2px}
-.rv-foot{padding:14px 18px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-.rv-foot .hint{font-family:var(--f-mono);font-size:11px;color:var(--muted);letter-spacing:.08em}
+/* answer */
+.result{border-radius:16px;overflow:hidden;border:2px solid var(--line);background:var(--panel);animation:pop .25s ease-out}
+.result .hd{padding:18px 18px 14px}
+.result .hd.ok{background:var(--sage-bg)}
+.result .hd.no{background:var(--rust-bg)}
+.result .big{font-family:var(--f-display);font-weight:600;font-size:30px;margin:0}
+.hd.ok .big{color:var(--sage)} .hd.no .big{color:var(--rust)}
+.result .hd p{margin:4px 0 0;font-size:18px}
+.trick{margin:0;padding:14px 18px;border-top:2px solid var(--line);font-family:var(--f-mono);font-size:18px;color:var(--amber)}
+.facts{margin:0;padding:0}
+.facts div{display:grid;grid-template-columns:120px 1fr;gap:10px;padding:12px 18px;border-top:2px solid var(--line)}
+.facts dt{font-weight:700;color:var(--blue);font-size:16px}
+.facts dd{margin:0;font-size:17px;min-width:0}
 
-/* type chips */
-.chip{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;border-radius:4px;padding:3px 7px;border:1px solid;display:inline-block;white-space:nowrap}
-.chip.nt{color:var(--blue);border-color:#8aa3c855}
-.chip.hormone{color:var(--violet);border-color:#a092c455}
-.state{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;border-radius:20px;padding:3px 9px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
-.state.learning{color:var(--blue);border-color:#8aa3c855}
-.state.mastered{color:var(--sage);border-color:#93b79d66;background:var(--sage-bg)}
+/* end */
+.score{font-family:var(--f-display);font-weight:600;font-size:64px;line-height:1;margin:0;text-align:center}
+.score small{display:block;font-size:20px;font-weight:400;color:var(--ink2);margin-top:8px}
+.list{display:grid;gap:8px}
+.list div{background:var(--panel);border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.list b{font-size:19px}
+.list span{font-family:var(--f-mono);color:var(--amber);font-size:15px}
 
-/* trace path */
-.trace{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:center;gap:8px;border:1px solid var(--line);border-radius:var(--r);padding:16px;background:var(--bg2)}
-.node{border:1px solid var(--line);border-radius:8px;padding:10px 10px;text-align:center;font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;background:var(--panel);min-width:0;overflow-wrap:anywhere}
-.node small{display:block;color:var(--muted);font-size:11px;letter-spacing:.16em;margin-bottom:4px}
-.node.q{border-style:dashed;color:var(--blue);font-size:22px;padding:6px}
-.node.q.hit{border-style:solid;font-size:12px;padding:10px;color:var(--sage);border-color:var(--sage)}
-.arrow{color:var(--muted);font-family:var(--f-mono)}
-.via{grid-column:1/-1;text-align:center;font-family:var(--f-mono);font-size:11px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase}
-
-/* detective */
-.clues{display:grid;gap:8px;counter-reset:c}
-.clue{display:grid;grid-template-columns:72px 1fr;gap:10px;align-items:baseline;border:1px solid var(--line);border-radius:8px;padding:10px 14px;background:var(--bg2);animation:rise .2s ease-out}
-.clue span{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;color:var(--muted)}
-.clue p{margin:0;font-size:17px}
-.clue.hidden{border-style:dashed;color:var(--muted);background:none}
-.stars{color:var(--amber);letter-spacing:.2em;font-family:var(--f-mono)}
-.stars s{color:var(--line);text-decoration:none}
-
-/* balance gauge */
-.gauge{border:1px solid var(--line);border-radius:var(--r);padding:14px 16px 12px;background:var(--bg2)}
-.g-ends{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:12px;letter-spacing:.14em}
-.g-ends .brk{color:var(--rust)} .g-ends .go{color:var(--sage)}
-.g-ends small{display:block;color:var(--muted);font-size:11px;letter-spacing:.1em}
-.g-track{position:relative;height:10px;margin:10px 0 6px;border-radius:5px;background:linear-gradient(90deg,#c9846655,#2a3242 45%,#2a3242 55%,#93b79d55)}
-.g-needle{position:absolute;top:-5px;width:2px;height:20px;background:var(--ink);left:50%;transition:left .5s cubic-bezier(.3,.7,.2,1)}
-.g-read{text-align:center;font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase}
-
-/* timer */
-.timer{display:flex;align-items:center;gap:12px}
-.timer .t{font-family:var(--f-mono);font-size:28px;font-variant-numeric:tabular-nums;min-width:3ch}
-.timer .tb{flex:1;height:4px;background:var(--line);border-radius:2px;overflow:hidden}
-.timer .tb i{display:block;height:100%;width:100%!important;background:var(--blue);transform-origin:left;transform:scaleX(var(--p,1));transition:transform 1s linear}
-.timer.low .t{color:var(--rust)} .timer.low .tb i{background:var(--rust)}
-.flash-ok{animation:fok .35s}
-.flash-no{animation:fno .35s}
-@keyframes fok{0%{box-shadow:0 0 0 0 #93b79d55}100%{box-shadow:0 0 0 12px transparent}}
-@keyframes fno{0%,100%{transform:none}30%{transform:translateX(-4px)}60%{transform:translateX(4px)}}
-
-/* report */
-.report{max-width:720px;margin:0 auto;display:grid;gap:18px}
-.rep-card{border:1px solid var(--line);border-radius:var(--r);background:var(--panel)}
-.rep-row{display:grid;grid-template-columns:170px 1fr;gap:12px;padding:14px 18px;border-top:1px solid var(--line);align-items:baseline}
-.rep-row:first-child{border-top:0}
-.rep-row .v{font-family:var(--f-display);font-size:19px;min-width:0}
-.big{font-family:var(--f-display);font-weight:300;font-size:clamp(44px,8vw,72px);line-height:1;letter-spacing:.02em}
-.big small{font-size:.4em;color:var(--muted)}
-.names{display:flex;flex-wrap:wrap;gap:6px}
-.names span{border:1px solid var(--line);border-radius:4px;padding:2px 8px;font-size:15px}
-.names.good span{border-color:#93b79d55;color:var(--sage)}
-.names.weak span{border-color:#c9846655;color:var(--rust)}
-
-/* lab */
-.lab-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;align-items:start}
-.group-h{display:flex;align-items:baseline;gap:12px;margin:26px 0 12px;border-bottom:1px solid var(--line);padding-bottom:8px}
-.group-h h3{margin:0;font-family:var(--f-display);font-weight:500;letter-spacing:.14em;font-size:15px}
-.group-h p{margin:0;color:var(--muted);font-size:13px}
-.card{border:1px solid var(--line);border-radius:var(--r);background:var(--panel);overflow:hidden}
-.card summary{list-style:none;cursor:pointer;padding:14px 16px;display:grid;gap:6px}
-.card summary::-webkit-details-marker{display:none}
-.card .row1{display:flex;align-items:center;gap:8px;justify-content:space-between}
-.card .nm{font-family:var(--f-display);font-weight:500;font-size:20px;letter-spacing:.04em}
-.card .mm{font-family:var(--f-mono);font-size:12px;color:var(--amber)}
-.card .facets{display:flex;gap:4px;flex-wrap:wrap}
-.card .facets i{font-style:normal;font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;padding:2px 5px;border-radius:3px;border:1px solid var(--line);color:var(--muted)}
-.card .facets i.on{color:var(--sage);border-color:#93b79d55}
-.card .more{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;color:var(--muted)}
-.card[open] .more{display:none}
-.card .profile{grid-template-columns:110px 1fr;border-top:1px solid var(--line);font-size:14.5px}
-.card .profile dt,.card .profile dd{padding:9px 14px}
-.ovd{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.ovd>div{border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;background:var(--bg2)}
-.ovd h4{margin:0 0 4px;font-family:var(--f-mono);font-size:11px;letter-spacing:.16em;color:var(--blue);font-weight:500}
-.ovd p{margin:0;font-size:14.5px;color:var(--ink2)}
-
-/* table */
-.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--panel)}
-table{border-collapse:collapse;width:100%;min-width:860px;font-size:14px}
-th{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-align:left;font-weight:500;padding:10px 12px;border-bottom:1px solid var(--line);background:var(--bg2);position:sticky;top:0}
-td{padding:10px 12px;border-top:1px solid var(--line);vertical-align:top}
-tr.main{cursor:pointer}
-tr.main:hover td{background:var(--panel2)}
-tr.main td:first-child{font-family:var(--f-display);font-weight:500;font-size:16px;white-space:nowrap}
-tr.main td:first-child::before{content:"+ ";font-family:var(--f-mono);color:var(--muted)}
-tr.main.open td:first-child::before{content:"− "}
-tr.ext td{background:var(--bg2);color:var(--ink2)}
-tr.ext b{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;color:var(--muted);font-weight:500;margin-right:6px}
-
-/* log */
-.log{display:grid;gap:10px}
-.entry{border:1px solid var(--line);border-radius:var(--r);background:var(--panel);padding:14px 16px;display:grid;gap:10px}
-.entry .q{margin:0;font-size:15px;color:var(--ink2)}
-.entry .pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.entry .pair div{border:1px solid var(--line);border-radius:6px;padding:8px 10px}
-.entry .pair .c1{border-color:#c9846655}.entry .pair .c2{border-color:#93b79d55}
-.entry .pair b{display:block;font-weight:400;font-size:16px}
-.entry .pair .c1 b{color:var(--rust)}.entry .pair .c2 b{color:var(--sage)}
-.entry .why{margin:0;font-size:15px}
-.entry .ft{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-.empty{border:1px dashed var(--line);border-radius:var(--r);padding:28px 20px;text-align:center;color:var(--ink2)}
-
-/* how */
-.how{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-.how>div{border:1px solid var(--line);border-radius:var(--r);padding:16px;background:var(--panel)}
-.how h4{margin:0 0 6px;font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;color:var(--blue);font-weight:500}
-.how p{margin:0;color:var(--ink2);font-size:15px}
-.loop{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-family:var(--f-mono);font-size:11px;letter-spacing:.12em}
-.loop span{border:1px solid var(--line);border-radius:4px;padding:5px 8px}
-.loop em{font-style:normal;color:var(--muted)}
-
-/* modal */
-.modal{position:fixed;inset:0;background:#05060acc;display:grid;place-items:center;padding:16px;z-index:50}
-.modal>div{max-width:420px;width:100%;border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:20px;display:grid;gap:14px}
-.modal h3{margin:0;font-family:var(--f-display);letter-spacing:.1em;font-weight:500}
-.modal p{margin:0;color:var(--ink2)}
-.modal .act{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
-
-@media (max-width:640px){
-  body{font-size:15.5px}
-  .top-in{gap:8px 12px;padding:8px 16px}
-  .brand{font-size:11px;letter-spacing:.16em}
-  .prog-txt span{display:none}
-  .nav{order:3;width:100%;justify-content:space-between}
-  .nav button{padding:6px 6px;font-size:11px;letter-spacing:.08em}
+@media (max-width:480px){
+  body{font-size:17px}
   .opts{grid-template-columns:1fr}
-  .profile{grid-template-columns:1fr}
-  .profile dt{padding-bottom:0;border-top:1px solid var(--line)}
-  .profile dd{border-top:0;padding-top:4px}
-  .profile dt:first-of-type{border-top:0}
-  .trace{grid-template-columns:1fr;text-align:center}
-  .arrow{transform:rotate(90deg);justify-self:center}
-  .rep-row{grid-template-columns:1fr;gap:4px}
-  .mode{grid-template-columns:1fr}
-  .mode .tag{display:none}
-  .ovd,.entry .pair{grid-template-columns:1fr}
-  .clue{grid-template-columns:1fr;gap:2px}
-  .lab-grid{grid-template-columns:1fr}
+  .facts div{grid-template-columns:1fr;gap:2px}
 }
-@media (prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation:none!important;transition:none!important}
-}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
-
 </head>
 <body>
-<header class="top">
-  <div class="top-in">
-    <button class="brand" data-go="home" aria-label="Neural Night Shift home">NEURAL <i>·</i> NIGHT SHIFT</button>
-    <nav class="nav" aria-label="Main">
-      <button data-go="hub">NIGHT SHIFT</button>
-      <button data-go="lab">BRAIN LAB</button>
-      <button data-go="log">NIGHT SHIFT LOG</button>
-      <button data-go="how">HOW TO PLAY</button>
-    </nav>
-    <div class="prog">
-      <div class="prog-txt" id="progTxt"></div>
-      <button class="snd" id="sndBtn" aria-pressed="false">SOUND OFF</button>
-    </div>
-  </div>
-  <div class="bar"><i id="barFill" style="width:0"></i></div>
-</header>
 <main id="app"></main>
-<div class="modal" id="modal" hidden></div>
-
 <script>
-/* =================== CHEMICAL DATABASE =================== */
+/* Each chemical: 4 clues (easy to hard order), plus short facts. */
 const C = {
-  dopamine:{name:"Dopamine",cat:"nt",type:"Neurotransmitter",
-    origin:"Neurons in several brain areas, especially the substantia nigra and the ventral tegmental area (VTA).",
-    dest:"Target neurons along several dopamine pathways, through dopamine receptors. These include pathways for reward, motivation, movement and attention.",
-    job:["Reward","Motivation","Reinforcement","Movement","Attention"],
-    off:"Reduced dopamine activity in the substantia nigra pathway is associated with Parkinson’s disease. Abnormal dopamine signaling in specific pathways is associated with schizophrenia. Dopamine pathways are heavily involved in addiction and reinforcement.",
-    ap:"Dopamine plays important roles in reward, motivation, reinforcement, movement and attention. Calling it just the “pleasure chemical” misses most of its job.",
-    mem:"Dopamine = Drive & Reward",brief:"reward, motivation, reinforcement and movement",
-    o2:"Substantia nigra, VTA",d2:"Reward, movement and attention pathways",j2:"Reward, motivation, movement, attention",f2:"Parkinson’s (reduced, substantia nigra); schizophrenia (abnormal, specific pathways); addiction"},
-  serotonin:{name:"Serotonin",cat:"nt",type:"Neurotransmitter",
-    origin:"Mainly specialized neurons in the brainstem (the raphe nuclei). Large amounts are also made in the gastrointestinal system.",
-    dest:"Target cells throughout the brain and body, through serotonin receptors, including areas that regulate mood, sleep, appetite and digestion.",
-    job:["Mood regulation","Sleep","Appetite","Digestion","Regulating many biological processes"],
-    off:"Abnormal serotonin signaling has been associated with depression, anxiety and other psychological conditions. Saying low serotonin simply “causes” depression is not accurate.",
-    ap:"Commonly associated with mood, sleep and appetite. Many antidepressants (SSRIs) act on serotonin signaling.",
-    mem:"Serotonin = Stability",brief:"mood, sleep and appetite regulation",
-    o2:"Brainstem neurons; gut",d2:"Receptors across brain and body",j2:"Mood, sleep, appetite, digestion",f2:"Associated with depression, anxiety"},
-  norepinephrine:{name:"Norepinephrine",cat:"nt",type:"Neurotransmitter",
-    origin:"Brainstem neurons, especially the locus coeruleus. Also released by neurons of the sympathetic nervous system.",
-    dest:"Target cells throughout the brain and body, especially systems for attention, arousal, alertness and stress.",
-    job:["Alertness","Attention","Arousal","Stress response"],
-    off:"Abnormal norepinephrine signaling has been associated with mood disorders, anxiety, and problems involving arousal and attention.",
-    ap:"Important for alertness and the body’s response to stress. Works closely with the sympathetic nervous system.",
-    mem:"Norepinephrine = Notice & React",brief:"alertness, attention and arousal, as a neurotransmitter released by neurons",
-    o2:"Locus coeruleus; sympathetic neurons",d2:"Attention, arousal and stress systems",j2:"Alertness, attention, arousal, stress",f2:"Associated with mood disorders, anxiety, attention problems"},
-  glutamate:{name:"Glutamate",cat:"nt",type:"Neurotransmitter",
-    origin:"Released by many neurons throughout the central nervous system (brain and spinal cord).",
-    dest:"Receptors on neurons throughout the brain and spinal cord. It generally makes target neurons more likely to fire.",
-    job:["Major excitatory neurotransmitter","Learning","Memory","Neural communication"],
-    off:"Abnormal glutamate signaling can cause excessive neural excitation, which is associated with seizures and several neurological and psychiatric conditions. Too much excitation can damage neurons.",
-    ap:"The brain’s major excitatory neurotransmitter, and central to learning and memory.",
-    mem:"Glutamate = GO",brief:"excitation, which makes neurons more likely to fire",
-    o2:"Neurons across the CNS",d2:"Neurons in brain and spinal cord (excites)",j2:"Major excitatory signal; learning, memory",f2:"Excess excitation; seizures; can damage neurons"},
-  gaba:{name:"GABA",cat:"nt",type:"Neurotransmitter",
-    origin:"GABAergic neurons (neurons that make GABA) throughout the brain.",
-    dest:"Receptors on neurons throughout the central nervous system. It generally makes target neurons less likely to fire.",
-    job:["Major inhibitory neurotransmitter","Decreases neural activity","Prevents excessive excitation","Keeps neural activity balanced"],
-    off:"Abnormal GABA signaling has been associated with anxiety, seizures and other conditions involving abnormal neural excitability. Reduced GABA activity can let neural activity run too high.",
-    ap:"GABA acts like the brain’s brake. Alcohol and benzodiazepines (anti-anxiety drugs) enhance GABA’s effects.",
-    mem:"GABA = BRAKE",brief:"inhibition, which makes neurons less likely to fire",
-    o2:"GABAergic neurons in the brain",d2:"Neurons across the CNS (inhibits)",j2:"Major inhibitory signal; neural brake",f2:"Associated with anxiety, seizures"},
-  endorphins:{name:"Endorphins",cat:"nt",type:"Neuropeptide (neurotransmitter-related signaling molecule)",
-    origin:"Mainly the brain and the pituitary gland.",
-    dest:"Opioid receptors in the brain, spinal cord and other parts of the nervous system.",
-    job:["Reduce the perception of pain","Help regulate pain","Can contribute to pleasure and well-being"],
-    off:"The body’s own (endogenous) opioid system is involved in pain regulation and reward. Changes in this system are relevant to addiction-related processes; opioid drugs act on the same receptors.",
-    ap:"Endorphins are the body’s natural pain relievers.",
-    mem:"Endorphins = End the Pain",brief:"reducing pain",
-    o2:"Brain, pituitary gland",d2:"Opioid receptors (brain, spinal cord)",j2:"Natural pain relief; well-being",f2:"Opioid system tied to pain regulation and addiction"},
-  substanceP:{name:"Substance P",cat:"nt",type:"Neuropeptide (pain-signaling molecule)",
-    origin:"Sensory neurons, especially those that respond to painful or harmful stimuli.",
-    dest:"Released in the spinal cord and other pain-processing areas. Acts on receptors including neurokinin-1 (NK1) receptors.",
-    job:["Transmits pain-related signals","Contributes to inflammation","Signals potentially harmful stimuli"],
-    off:"Abnormal Substance P signaling has been studied in chronic pain and inflammatory conditions.",
-    ap:"The key idea: Substance P → pain signaling.",
-    mem:"Substance P = Pain",brief:"carrying pain signals",
-    o2:"Pain-sensing sensory neurons",d2:"Spinal cord, pain pathways (NK1)",j2:"Pain signaling; inflammation",f2:"Studied in chronic pain, inflammation"},
-  ach:{name:"Acetylcholine",cat:"nt",type:"Neurotransmitter",
-    origin:"Neurons in the brain, and motor neurons that communicate with muscles.",
-    dest:"Neuromuscular junctions (where nerves meet skeletal muscle), brain regions for learning and memory, and parts of the autonomic nervous system.",
-    job:["Muscle movement","Attention","Learning","Memory"],
-    off:"Loss of acetylcholine-producing neurons is strongly associated with Alzheimer’s disease and contributes to memory and cognitive problems. Abnormal acetylcholine signaling can also affect muscle function.",
-    ap:"Important for muscle movement and for cognitive processes such as learning and memory.",
-    mem:"Acetylcholine = Action + Attention",brief:"muscle movement, learning and memory",
-    o2:"Brain neurons; motor neurons",d2:"Neuromuscular junction; memory areas",j2:"Muscle movement, attention, learning, memory",f2:"Alzheimer’s (loss of ACh neurons); muscle problems"},
-  adrenaline:{name:"Adrenaline",full:"Adrenaline / Epinephrine",cat:"hormone",type:"Hormone",
-    origin:"Mainly the adrenal medulla, the inner part of the adrenal glands.",
-    dest:"Travels through the bloodstream to organs across the body, including the heart, lungs, blood vessels and liver.",
-    job:["Increases heart rate","Increases breathing","Mobilizes energy","Prepares the body for fight-or-flight"],
-    off:"Abnormally high or prolonged adrenaline activity can contribute to a racing heart, sweating and heightened arousal.",
-    ap:"Strongly associated with the sympathetic nervous system and the acute fight-or-flight response.",
-    mem:"Adrenaline = Alarm",brief:"body-wide fight-or-flight, carried as a hormone through the bloodstream",
-    o2:"Adrenal medulla",d2:"Heart, lungs, blood vessels, liver (via blood)",j2:"Fight-or-flight: heart rate, breathing, energy",f2:"High/prolonged: racing heart, sweating, arousal"},
-  leptin:{name:"Leptin",cat:"hormone",type:"Hormone",
-    origin:"Mainly fat cells.",
-    dest:"Travels through the bloodstream to the brain, especially the hypothalamus, carrying information about stored energy.",
-    job:["Helps regulate appetite","Signals energy availability","Helps regulate long-term energy balance"],
-    off:"In leptin resistance, the brain responds less to leptin, which interferes with normal appetite and energy regulation. Leptin resistance is associated with obesity. More leptin does not simply mean less weight.",
-    ap:"Leptin helps signal that the body has stored energy.",
-    mem:"Leptin = Let’s stop eating",brief:"signaling stored energy from fat cells",
-    o2:"Fat cells",d2:"Hypothalamus (via blood)",j2:"Signals stored energy; appetite, energy balance",f2:"Leptin resistance; associated with obesity"},
-  ghrelin:{name:"Ghrelin",cat:"hormone",type:"Hormone",
-    origin:"Mainly the stomach.",
-    dest:"Travels through the bloodstream to the brain, including the hypothalamus, to influence hunger and energy balance.",
-    job:["Increases hunger","Helps regulate energy balance","Signals that food may be needed"],
-    off:"Abnormal ghrelin signaling has been studied in obesity, eating disorders and other conditions involving appetite and energy regulation.",
-    ap:"Ghrelin is strongly associated with hunger.",
-    mem:"Ghrelin = Growling stomach",brief:"hunger signals sent from the stomach",
-    o2:"Stomach",d2:"Hypothalamus (via blood)",j2:"Increases hunger",f2:"Studied in obesity, eating disorders"},
-  melatonin:{name:"Melatonin",cat:"hormone",type:"Hormone",
-    origin:"Mainly the pineal gland.",
-    dest:"Released into the bloodstream; acts on receptors involved in circadian rhythms and biological timing.",
-    job:["Helps regulate the sleep-wake cycle","Helps regulate circadian rhythms","Signals biological night"],
-    off:"Abnormal timing or production can contribute to sleep and circadian rhythm problems, including jet lag and shift-work sleep problems.",
-    ap:"Helps regulate the body’s biological clock. Its release is influenced by light and darkness.",
-    mem:"Melatonin = Midnight",brief:"signaling biological night",
-    o2:"Pineal gland",d2:"Circadian / timing receptors (via blood)",j2:"Sleep-wake cycle; biological night",f2:"Sleep and circadian problems; jet lag, shift work"},
-  oxytocin:{name:"Oxytocin",cat:"hormone",type:"Hormone",
-    origin:"Made in the hypothalamus, then transported to the posterior pituitary, which releases it.",
-    dest:"The uterus and mammary glands during reproduction, plus the brain and other tissues involved in social and reproductive behavior.",
-    job:["Childbirth","Breastfeeding","Social bonding","Attachment","Reproductive behavior"],
-    off:"Oxytocin is involved in bonding and reproduction, but its effects depend on context. It is not simply a “love hormone.”",
-    ap:"Involved in bonding, attachment, childbirth and breastfeeding.",
-    mem:"Oxytocin = Connection",brief:"bonding, childbirth and breastfeeding",
-    o2:"Hypothalamus → posterior pituitary",d2:"Uterus, mammary glands, brain",j2:"Childbirth, breastfeeding, bonding",f2:"Context-dependent social effects"}
+  dopamine:{name:"Dopamine",kind:"Neurotransmitter",
+    clues:["I am a neurotransmitter.","I am strongly involved in reward and motivation.","I am also involved in movement.","Neurons in the substantia nigra and VTA make me."],
+    from:"Neurons in the substantia nigra and ventral tegmental area (VTA)",to:"Brain pathways for reward, motivation, movement and attention",
+    job:"Reward, motivation, movement and attention",off:"Low activity in the substantia nigra is linked with Parkinson’s disease. Unusual signaling in some pathways is linked with schizophrenia and addiction.",
+    trick:"Dopamine = Drive & Reward"},
+  serotonin:{name:"Serotonin",kind:"Neurotransmitter",
+    clues:["I am a neurotransmitter.","A lot of me is made in the gut, not only the brain.","I am linked with mood, sleep and appetite.","Antidepressants called SSRIs keep me around longer."],
+    from:"Neurons in the brainstem, and the gut",to:"Receptors all over the brain and body",
+    job:"Mood, sleep, appetite and digestion",off:"Unusual serotonin signaling is linked with depression and anxiety. It is not the single cause.",
+    trick:"Serotonin = Stability"},
+  norepinephrine:{name:"Norepinephrine",kind:"Neurotransmitter",
+    clues:["I am a neurotransmitter.","The locus coeruleus in the brainstem releases me.","I make you alert and ready to pay attention.","My hormone cousin from the adrenal glands has a similar name."],
+    from:"The locus coeruleus (brainstem) and sympathetic nerves",to:"Brain and body systems for attention, alertness and stress",
+    job:"Alertness, attention, arousal and stress response",off:"Unusual signaling is linked with mood disorders, anxiety and attention problems.",
+    trick:"Norepinephrine = Notice & React"},
+  glutamate:{name:"Glutamate",kind:"Neurotransmitter",
+    clues:["I am a neurotransmitter.","I am found almost everywhere in the brain and spinal cord.","I make neurons MORE likely to fire.","I am the brain’s main “go” signal."],
+    from:"Neurons all over the brain and spinal cord",to:"Other neurons, making them more likely to fire",
+    job:"Main excitatory (“go”) signal; learning and memory",off:"Too much excitement in the brain is linked with seizures and can damage neurons.",
+    trick:"Glutamate = GO"},
+  gaba:{name:"GABA",kind:"Neurotransmitter",
+    clues:["I am a neurotransmitter.","I make neurons LESS likely to fire.","Alcohol and anti-anxiety medicines boost my effects.","I am the brain’s main “brake” signal."],
+    from:"Neurons all over the brain",to:"Other neurons, making them less likely to fire",
+    job:"Main inhibitory (“brake”) signal; calms neural activity",off:"Unusual GABA signaling is linked with anxiety and seizures.",
+    trick:"GABA = BRAKE"},
+  endorphins:{name:"Endorphins",kind:"Neuropeptide",
+    clues:["I am a neuropeptide, a small protein messenger.","The brain and pituitary gland make me.","I attach to opioid receptors.","I am your body’s natural pain reliever."],
+    from:"The brain and pituitary gland",to:"Opioid receptors in the brain and spinal cord",
+    job:"Reduce pain; can add a feeling of well-being",off:"This system is tied to pain and reward. Opioid drugs use the same receptors, which links it to addiction.",
+    trick:"Endorphins = End the Pain"},
+  substanceP:{name:"Substance P",kind:"Neuropeptide",
+    clues:["I am a neuropeptide, a small protein messenger.","Sensory neurons release me.","I work in the spinal cord on NK1 receptors.","I carry pain signals."],
+    from:"Sensory neurons that sense harm",to:"The spinal cord and pain pathways",
+    job:"Sends pain signals; adds to inflammation",off:"Studied in chronic (long-lasting) pain and inflammation.",
+    trick:"Substance P = Pain"},
+  ach:{name:"Acetylcholine",kind:"Neurotransmitter",
+    clues:["I am a neurotransmitter.","Motor neurons release me where nerves meet muscles.","I make your muscles move.","Losing the neurons that make me is linked with Alzheimer’s disease."],
+    from:"Motor neurons and brain neurons",to:"Muscles, and brain areas for learning and memory",
+    job:"Muscle movement, attention, learning and memory",off:"Loss of acetylcholine neurons is strongly linked with Alzheimer’s disease.",
+    trick:"Acetylcholine = Action + Attention"},
+  adrenaline:{name:"Adrenaline",kind:"Hormone",
+    clues:["I am a hormone.","The adrenal glands (above your kidneys) release me.","I travel in the blood to your heart and lungs.","I get your body ready for fight-or-flight."],
+    from:"The adrenal glands (adrenal medulla)",to:"Heart, lungs, blood vessels and liver, through the blood",
+    job:"Faster heartbeat and breathing; fight-or-flight",off:"Too much for too long can cause a racing heart, sweating and feeling on edge.",
+    trick:"Adrenaline = Alarm"},
+  leptin:{name:"Leptin",kind:"Hormone",
+    clues:["I am a hormone.","Fat cells make me.","I tell the hypothalamus how much energy is stored.","When the brain stops listening to me, appetite control goes off balance."],
+    from:"Fat cells",to:"The hypothalamus in the brain, through the blood",
+    job:"Reports stored energy; helps control appetite",off:"In leptin resistance the brain stops responding well. This is linked with obesity.",
+    trick:"Leptin = Let’s stop eating"},
+  ghrelin:{name:"Ghrelin",kind:"Hormone",
+    clues:["I am a hormone.","Your stomach makes me.","My level rises before meals.","I make you feel hungry."],
+    from:"The stomach",to:"The hypothalamus in the brain, through the blood",
+    job:"Makes you hungry",off:"Studied in obesity and eating disorders.",
+    trick:"Ghrelin = Growling stomach"},
+  melatonin:{name:"Melatonin",kind:"Hormone",
+    clues:["I am a hormone.","The pineal gland makes me.","Darkness increases me; bright light lowers me.","I tell your body it is night and time to sleep."],
+    from:"The pineal gland",to:"The body clock (circadian system), through the blood",
+    job:"Controls the sleep-wake cycle",off:"Bad timing is linked with sleep problems, jet lag and night-shift tiredness.",
+    trick:"Melatonin = Midnight"},
+  oxytocin:{name:"Oxytocin",kind:"Hormone",
+    clues:["I am a hormone.","The hypothalamus makes me and the pituitary gland releases me.","I help with childbirth and breastfeeding.","I am involved in bonding and attachment."],
+    from:"The hypothalamus, released by the posterior pituitary",to:"The uterus, milk glands and the brain",
+    job:"Childbirth, breastfeeding, bonding",off:"Its effects on social behavior depend on the situation. It is not just a “love hormone.”",
+    trick:"Oxytocin = Connection"}
 };
-const IDS = Object.keys(C);
-const NT = ["dopamine","serotonin","norepinephrine","glutamate","gaba","endorphins","substanceP","ach"];
-const HO = ["adrenaline","leptin","ghrelin","melatonin","oxytocin"];
-const fullName = id => C[id].full || C[id].name;
-
-/* commonly confused pairs: used as distractors and for REMEMBER lines */
-const CONF = {glutamate:["gaba"],gaba:["glutamate"],leptin:["ghrelin"],ghrelin:["leptin"],dopamine:["serotonin","ach"],serotonin:["dopamine"],
+/* Chemicals people mix up, used as wrong choices */
+const MIX = {glutamate:["gaba"],gaba:["glutamate"],leptin:["ghrelin"],ghrelin:["leptin"],dopamine:["serotonin","ach"],serotonin:["dopamine"],
   adrenaline:["norepinephrine","melatonin"],norepinephrine:["adrenaline"],endorphins:["substanceP"],substanceP:["endorphins"],
-  melatonin:["adrenaline"],ach:["dopamine"],oxytocin:["endorphins","dopamine"]};
-/* overlap that would make a vague question ambiguous */
-const AVOID = {melatonin:["serotonin"],serotonin:["melatonin"],adrenaline:["norepinephrine"],norepinephrine:["adrenaline"]};
-const PAIR = {
-  "gaba|glutamate":"GLUTAMATE = GO · GABA = BRAKE",
-  "ghrelin|leptin":"LEPTIN = Let’s stop eating · GHRELIN = Growling stomach",
-  "dopamine|serotonin":"DOPAMINE = Drive & Reward · SEROTONIN = Stability",
-  "adrenaline|norepinephrine":"ADRENALINE = Alarm (hormone, bloodstream) · NOREPINEPHRINE = Notice & React (neurotransmitter)",
-  "endorphins|substanceP":"ENDORPHINS = End the Pain · SUBSTANCE P = Pain signal",
-  "adrenaline|melatonin":"MELATONIN = Midnight · ADRENALINE = Alarm",
-  "ach|dopamine":"ACETYLCHOLINE = Action + Attention · DOPAMINE = Drive & Reward"
-};
-const pairLine = (a,b) => PAIR[[a,b].sort().join("|")] || null;
+  melatonin:["adrenaline"],ach:["dopamine"],oxytocin:["endorphins"]};
+const IDS = Object.keys(C);
+const KEY = "nns-detective-v2";
 
-/* =================== QUESTION BANK ===================
-   [chemical, facet, level(1 rookie / 2 researcher / 3 AP), prompt, extra]
-   extra.d = fixed chemical options; extra.o = text options (first is correct) */
-const B = [
- ["dopamine","id",1,"Which neurotransmitter is most associated with reward and motivation?"],
- ["dopamine","origin",2,"Which neurotransmitter is made by neurons in the substantia nigra and the ventral tegmental area?"],
- ["dopamine","dest",2,"Which neurotransmitter acts along several brain pathways for reward, motivation, movement and attention?"],
- ["dopamine","func",3,"A student aces a practice test and feels driven to study the same way again. Which neurotransmitter is most involved in this reinforcement?"],
- ["dopamine","dys",2,"Reduced dopamine activity in the substantia nigra pathway is associated with which condition?",{o:["Parkinson’s disease","Alzheimer’s disease","Insomnia","Chronic pain"],why:"Dopamine neurons in the substantia nigra help control movement. Their loss is associated with the movement problems of Parkinson’s disease. Alzheimer’s is linked with loss of acetylcholine neurons."}],
- ["dopamine","dys",3,"Abnormal dopamine signaling in specific brain pathways is associated with which psychological disorder?",{o:["Schizophrenia","Alzheimer’s disease","Jet lag","Chronic pain"],why:"Abnormal dopamine signaling in specific pathways is associated with schizophrenia. That is an association, not a simple “too much dopamine causes it” rule."}],
- ["dopamine","dys",3,"A drug strongly activates the brain’s reward pathways, making the behavior of taking it highly reinforcing. Which neurotransmitter system is most involved?"],
-
- ["serotonin","id",1,"Which neurotransmitter is commonly associated with mood, sleep and appetite?"],
- ["serotonin","origin",2,"Which neurotransmitter is made mainly by brainstem neurons, with large amounts also produced in the gut?"],
- ["serotonin","dest",2,"Which neurotransmitter acts on receptors throughout the brain and body in areas that regulate mood, sleep, appetite and digestion?"],
- ["serotonin","func",3,"Many antidepressants (SSRIs) keep a neurotransmitter in the synapse longer by blocking its reuptake. Which one?"],
- ["serotonin","dys",2,"Abnormal signaling of which neurotransmitter has been associated with depression and anxiety?",{d:["serotonin","substanceP","leptin","ach"]}],
- ["serotonin","dys",3,"Which statement about serotonin is most accurate?",{o:["Abnormal serotonin signaling has been associated with mood disorders","Low serotonin is the single cause of depression","Serotonin is the brain’s main excitatory neurotransmitter","Serotonin is a hormone made by fat cells"],why:"Researchers describe serotonin and depression as associated. A single-cause claim is too simple."}],
- ["serotonin","func",3,"During a hard winter, a person’s mood, sleep and appetite all shift together. Which neurotransmitter is most commonly associated with all three?",{d:["serotonin","glutamate","substanceP","oxytocin"]}],
-
- ["norepinephrine","id",1,"Which neurotransmitter is strongly involved in alertness and arousal?",{d:["norepinephrine","gaba","oxytocin","leptin"]}],
- ["norepinephrine","origin",2,"Which neurotransmitter is made in the locus coeruleus of the brainstem and also released by sympathetic nerves?"],
- ["norepinephrine","dest",2,"Which neurotransmitter acts across the brain and body on systems for attention, arousal and stress?",{d:["norepinephrine","melatonin","substanceP","oxytocin"]}],
- ["norepinephrine","func",3,"During a final exam, a student’s brain shifts into a focused, highly alert state. Which neurotransmitter, released by brainstem neurons, most supports this?",{d:["norepinephrine","gaba","melatonin","oxytocin"]}],
- ["norepinephrine","dys",2,"Abnormal signaling of which neurotransmitter has been linked to mood disorders, anxiety, and problems with attention and arousal?",{d:["norepinephrine","leptin","substanceP","oxytocin"]}],
- ["norepinephrine","id",3,"Two chemicals both help with fight-or-flight. Which one acts mainly as a NEUROTRANSMITTER released by neurons, rather than as a hormone from the adrenal medulla?",{d:["norepinephrine","adrenaline","melatonin","leptin"]}],
-
- ["glutamate","id",1,"What is the brain’s major excitatory neurotransmitter?"],
- ["glutamate","func",1,"Neural activity needs to increase. Which neurotransmitter turns it up?"],
- ["glutamate","origin",2,"Which neurotransmitter is released by many neurons throughout the central nervous system to excite other neurons?"],
- ["glutamate","dest",2,"A neurotransmitter binds receptors on neurons in the brain and spinal cord and makes them MORE likely to fire. Which one?"],
- ["glutamate","func",3,"While you study, synapses in the hippocampus strengthen with practice (long-term potentiation). Which excitatory neurotransmitter is central to this?",{d:["glutamate","gaba","melatonin","oxytocin"]}],
- ["glutamate","dys",2,"Excessive excitatory signaling, linked with seizures and possible damage to neurons, involves which neurotransmitter?"],
-
- ["gaba","id",1,"What is the brain’s major inhibitory neurotransmitter?"],
- ["gaba","func",1,"Neural activity needs to be slowed down. Which neurotransmitter applies the brake?"],
- ["gaba","origin",2,"Which neurotransmitter is released by inhibitory neurons found throughout the brain?"],
- ["gaba","dest",2,"A neurotransmitter binds neurons across the central nervous system and makes them LESS likely to fire. Which one?"],
- ["gaba","func",3,"Alcohol and anti-anxiety drugs like benzodiazepines both enhance the effects of one neurotransmitter, producing calming, slowing effects. Which one?"],
- ["gaba","dys",2,"Reduced activity of which neurotransmitter can let neural activity run too high, which is linked with anxiety and seizures?"],
-
- ["endorphins","id",1,"Which chemicals are the body’s natural pain relievers?"],
- ["endorphins","origin",2,"Which neuropeptides are made mainly in the brain and pituitary gland and reduce pain?"],
- ["endorphins","dest",2,"Which chemicals act on opioid receptors in the brain and spinal cord?"],
- ["endorphins","func",3,"Late in a marathon, a runner notices the pain fading and a sense of well-being. Which chemicals are most associated with this?"],
- ["endorphins","dys",3,"Opioid drugs like morphine act on the same receptors as which natural chemicals, which helps explain both their pain relief and their addiction risk?"],
-
- ["substanceP","id",1,"Which neuropeptide is most associated with transmitting pain signals?"],
- ["substanceP","origin",2,"Which neuropeptide is produced by sensory neurons that respond to potentially harmful stimuli?"],
- ["substanceP","dest",2,"Which neuropeptide is released in the spinal cord and acts on neurokinin-1 (NK1) receptors to pass along pain signals?"],
- ["substanceP","func",3,"You touch a hot pan. Before you even think, a pain message travels from sensory neurons into the spinal cord. Which neuropeptide carries it?"],
- ["substanceP","dys",2,"Abnormal signaling of which neuropeptide has been studied in chronic pain and inflammatory conditions?",{d:["substanceP","melatonin","leptin","oxytocin"]}],
-
- ["ach","id",1,"Which neurotransmitter triggers skeletal muscle contraction?"],
- ["ach","origin",2,"Which neurotransmitter is released by motor neurons and by brain neurons involved in memory?"],
- ["ach","dest",2,"Which neurotransmitter acts at the neuromuscular junction, where nerves meet muscles?"],
- ["ach","func",3,"A student uses spaced practice to learn vocabulary. Which neurotransmitter, also needed for muscle movement, is important for attention, learning and memory?"],
- ["ach","dys",2,"Loss of acetylcholine-producing neurons is strongly associated with which disorder?",{o:["Alzheimer’s disease","Parkinson’s disease","Schizophrenia","Insomnia"],why:"Acetylcholine supports learning and memory. Loss of the neurons that make it is strongly associated with Alzheimer’s disease. Parkinson’s is linked with dopamine neurons in the substantia nigra."}],
- ["ach","dys",3,"Botulinum toxin (Botox) blocks the release of a neurotransmitter at the neuromuscular junction, which paralyzes the muscle. Which one?"],
-
- ["adrenaline","id",1,"Which hormone is most associated with the fight-or-flight response?"],
- ["adrenaline","origin",2,"Which hormone is produced and released mainly by the adrenal medulla?"],
- ["adrenaline","dest",2,"Which hormone travels through the bloodstream to the heart, lungs, blood vessels and liver to prepare the body for action?"],
- ["adrenaline","func",3,"You are walking home at night and hear footsteps behind you. Your heart rate jumps and you become highly alert. Which hormone is most associated with this?"],
- ["adrenaline","dys",2,"Abnormally high or prolonged levels of which hormone can contribute to a racing heart, sweating and heightened arousal?"],
- ["adrenaline","func",3,"Which division of the nervous system signals the adrenal glands to release adrenaline?",{o:["Sympathetic nervous system","Parasympathetic nervous system","Somatic nervous system","Cerebellum"],why:"The sympathetic nervous system drives fight-or-flight, including adrenaline release. The parasympathetic system calms the body down (rest and digest)."}],
-
- ["leptin","id",1,"Which hormone signals to the brain that the body has stored energy?"],
- ["leptin","origin",2,"Which hormone is produced mainly by fat cells?"],
- ["leptin","dest",2,"Which hormone travels from fat tissue to the hypothalamus to report on long-term energy stores?"],
- ["leptin","func",3,"Researchers study mice that cannot make a certain hormone. The mice eat constantly and gain extreme weight. Which hormone is most likely missing?"],
- ["leptin","dys",2,"What happens in leptin resistance?",{o:["The brain responds less to leptin, disrupting appetite and energy regulation","The stomach stops producing hunger signals","The pineal gland releases less melatonin","Leptin levels always drop to zero"],why:"In leptin resistance the leptin signal is there, but the brain responds to it less. This is associated with obesity."}],
- ["leptin","dys",3,"Which statement about leptin is most accurate?",{o:["Leptin communicates stored energy and helps regulate appetite and energy balance","More leptin always means less weight","Leptin is made by the stomach to cause hunger","Leptin is the brain’s main inhibitory neurotransmitter"],why:"Leptin reports stored energy. “More leptin = less weight” ignores leptin resistance."}],
- ["leptin","func",3,"After a big holiday season, a long-term signal tells the hypothalamus that energy stores are well stocked. Which hormone carries that message?"],
-
- ["ghrelin","id",1,"Which hormone is associated with hunger?"],
- ["ghrelin","origin",2,"Which hormone is produced primarily by the stomach?"],
- ["ghrelin","dest",2,"Which hormone travels through the blood to the hypothalamus to increase hunger?"],
- ["ghrelin","func",3,"A student skips lunch. By 3 PM their stomach is growling and they can’t stop thinking about food. Which hormone has most likely risen?"],
- ["ghrelin","func",3,"A participant’s hunger ratings spike just before their usual lunchtime. Which hormone most likely rose beforehand?"],
- ["ghrelin","dys",2,"Abnormal signaling of which stomach hormone has been studied in obesity and eating disorders?"],
-
- ["melatonin","id",1,"Which hormone helps regulate the sleep-wake cycle?"],
- ["melatonin","origin",2,"Which hormone is produced primarily by the pineal gland?"],
- ["melatonin","dest",2,"Which hormone is released into the blood at night and acts on receptors that regulate circadian rhythms?"],
- ["melatonin","func",3,"A student scrolls a bright phone until 2 AM. Late-night light can delay the release of which hormone that signals biological night?"],
- ["melatonin","dys",2,"Disrupted timing of which hormone is linked with jet lag and shift-work sleep problems?"],
- ["melatonin","dys",3,"A traveler flies from New York to Paris and can’t fall asleep at local bedtime. Which hormone’s timing is most out of sync?"],
-
- ["oxytocin","id",1,"Which hormone is involved in childbirth, breastfeeding and social bonding?"],
- ["oxytocin","origin",2,"Which hormone is made in the hypothalamus and released from the posterior pituitary?"],
- ["oxytocin","dest",2,"Which hormone acts on the uterus and mammary glands, and also on brain areas involved in social behavior?"],
- ["oxytocin","func",3,"Researchers studying parent-infant attachment measure a hormone released during breastfeeding and close contact. Which hormone?"],
- ["oxytocin","id",3,"During labor, a hormone strengthens uterine contractions. Which one?"],
- ["oxytocin","dys",3,"Which statement about oxytocin is most accurate?",{o:["Its effects on social behavior depend on context","It is simply the “love hormone”","It is made by fat cells","It is the brain’s main excitatory neurotransmitter"],why:"Oxytocin is involved in bonding, attachment, childbirth and breastfeeding, but its social effects depend on the situation."}]
-];
-
-/* Chemical Detective clues */
-const DET = {
-  dopamine:["I am a neurotransmitter.","I am strongly involved in reward and motivation.","I am also involved in movement.","Neurons in the substantia nigra and VTA make me."],
-  serotonin:["I am a neurotransmitter.","Much of me is made in the gut, not only the brain.","I am linked with mood, sleep and appetite.","SSRIs keep me in the synapse longer."],
-  norepinephrine:["I am a neurotransmitter.","The locus coeruleus in the brainstem releases me.","I sharpen alertness, attention and arousal.","My hormone cousin from the adrenal glands has a similar name."],
-  glutamate:["I am a neurotransmitter.","I am found almost everywhere in the brain and spinal cord.","I make neurons more likely to fire.","I am the brain’s major excitatory signal. GO."],
-  gaba:["I am a neurotransmitter.","I make neurons less likely to fire.","Alcohol and anti-anxiety drugs boost my effects.","I am the brain’s major inhibitory signal. BRAKE."],
-  endorphins:["I am a neuropeptide.","The brain and pituitary gland make me.","I act on opioid receptors.","I help the body reduce pain."],
-  substanceP:["I am a neuropeptide.","Sensory neurons release me.","I act on NK1 receptors in the spinal cord.","I carry pain signals."],
-  ach:["I am a neurotransmitter.","Motor neurons release me at the neuromuscular junction.","I make skeletal muscles contract.","Losing the neurons that make me is associated with Alzheimer’s disease."],
-  adrenaline:["I am a hormone.","The adrenal medulla releases me.","I travel through the blood to the heart, lungs and liver.","I prepare the body for fight-or-flight."],
-  leptin:["I am a hormone.","Fat cells make me.","I report stored energy to the hypothalamus.","When the brain resists me, appetite regulation goes off balance."],
-  ghrelin:["I am a hormone.","The stomach makes me.","I rise before meals.","I make you hungry."],
-  melatonin:["I am a hormone.","The pineal gland makes me.","Darkness increases my release; bright light suppresses it.","I signal biological night."],
-  oxytocin:["I am a hormone.","The hypothalamus makes me; the posterior pituitary releases me.","I act on the uterus and mammary glands.","I am involved in bonding and attachment."]
-};
-
-/* Trace the Signal: origin → ? → destination */
-const TRACE = [
- ["ghrelin","STOMACH","BRAIN · HYPOTHALAMUS","Which hormone is being released to signal hunger?"],
- ["leptin","FAT CELLS","HYPOTHALAMUS","Which hormone is reporting how much energy is stored?"],
- ["melatonin","PINEAL GLAND","CIRCADIAN SYSTEM","Which hormone is signaling that it is biological night?"],
- ["ach","MOTOR NEURON","SKELETAL MUSCLE","Which neurotransmitter crosses this junction to make the muscle contract?"],
- ["substanceP","SENSORY NEURON","PAIN-PROCESSING PATHWAYS","Which neuropeptide is carrying the pain signal?"],
- ["adrenaline","ADRENAL MEDULLA","HEART · LUNGS · LIVER","Which hormone is preparing the body for fight-or-flight?"],
- ["oxytocin","HYPOTHALAMUS → POSTERIOR PITUITARY","UTERUS · MAMMARY GLANDS · BRAIN","Which hormone is involved in childbirth, breastfeeding and bonding?"],
- ["dopamine","SUBSTANTIA NIGRA · VTA","REWARD & MOVEMENT PATHWAYS","Which neurotransmitter is traveling these pathways?"],
- ["serotonin","BRAINSTEM NEURONS","MOOD · SLEEP · APPETITE CIRCUITS","Which neurotransmitter is being sent?"],
- ["norepinephrine","LOCUS COERULEUS","ATTENTION & AROUSAL SYSTEMS","Which neurotransmitter is raising alertness?"],
- ["glutamate","NEURONS ACROSS THE CNS","TARGET NEURON · MORE LIKELY TO FIRE","Which neurotransmitter is the excitatory signal?"],
- ["gaba","INHIBITORY NEURONS","TARGET NEURON · LESS LIKELY TO FIRE","Which neurotransmitter is the inhibitory signal?"],
- ["endorphins","BRAIN · PITUITARY GLAND","OPIOID RECEPTORS","Which chemicals are being released to reduce pain?"]
-];
-/* Trace: where from / where to (text options, first correct) */
-const LOC = [
- ["ghrelin","dest","Ghrelin leaves the stomach. Where does it mainly act to increase hunger?",["The hypothalamus in the brain","The uterus","Skeletal muscle","The pineal gland"]],
- ["melatonin","origin","Where is melatonin mainly produced?",["Pineal gland","Adrenal medulla","Stomach","Fat cells"]],
- ["adrenaline","origin","Where is adrenaline mainly produced and released?",["Adrenal medulla","Pineal gland","Hypothalamus","Locus coeruleus"]],
- ["leptin","origin","Where is leptin mainly produced?",["Fat cells","Stomach","Pineal gland","Motor neurons"]],
- ["ach","dest","A motor neuron releases acetylcholine. Where does it act?",["The neuromuscular junction (skeletal muscle)","Opioid receptors","The pineal gland","Fat cells"]],
- ["substanceP","dest","Pain-sensing neurons release Substance P. Where does it mainly act?",["The spinal cord and pain pathways (NK1 receptors)","The neuromuscular junction","The uterus","The pineal gland"]],
- ["endorphins","dest","Endorphins reduce pain by acting on which receptors?",["Opioid receptors","Neurokinin-1 (NK1) receptors","Receptors on fat cells","Melatonin receptors"]],
- ["norepinephrine","origin","In the brain, norepinephrine comes mainly from which brainstem area?",["Locus coeruleus","Pineal gland","Substantia nigra","Posterior pituitary"]],
- ["dopamine","origin","Dopamine-producing neurons are concentrated in which areas?",["Substantia nigra and ventral tegmental area","Locus coeruleus and pineal gland","Adrenal medulla","Stomach lining"]],
- ["oxytocin","origin","Oxytocin is made in the hypothalamus. Where is it released into the blood?",["Posterior pituitary","Adrenal medulla","Pineal gland","Stomach"]],
- ["serotonin","origin","Besides brainstem neurons, where is a large amount of serotonin produced?",["The gastrointestinal system","Fat cells","The adrenal medulla","The posterior pituitary"]],
- ["leptin","dest","Leptin travels from fat cells to which brain region?",["Hypothalamus","Cerebellum","Occipital lobe","Broca’s area"]],
- ["glutamate","dest","When glutamate binds receptors on a target neuron, what generally happens?",["The neuron becomes more likely to fire","The neuron becomes less likely to fire","A muscle relaxes","Melatonin is released"]],
- ["gaba","dest","When GABA binds receptors on a target neuron, what generally happens?",["The neuron becomes less likely to fire","The neuron becomes more likely to fire","Hunger increases","Heart rate increases"]],
- ["melatonin","dest","Once released, melatonin acts on receptors involved in what?",["Circadian rhythms and biological timing","Muscle contraction","Pain signaling in the spinal cord","Fat storage"]],
- ["adrenaline","dest","How does adrenaline reach the heart and lungs?",["Through the bloodstream","Across a synapse in the cortex","Only through the spinal cord","It is made inside the heart"]]
-];
-
-/* Brain Balance */
-const BAL = [
- ["gaba","Neural activity needs to be slowed down."],
- ["glutamate","Neural activity needs to become more active."],
- ["glutamate","A neuron needs a strong excitatory push to fire."],
- ["gaba","A seizure-prone circuit needs more inhibition."],
- ["gaba","A calming drug works by boosting the brain’s main brake. Which neurotransmitter does it boost?"],
- ["glutamate","New learning strengthens excitatory synapses in the hippocampus."],
- ["norepinephrine","You need to stay alert and focused late at night. Which neurotransmitter turns arousal up?",["norepinephrine","gaba","melatonin","leptin"]],
- ["adrenaline","A sudden threat: the whole body needs to gear up through the bloodstream.",["adrenaline","gaba","oxytocin","ghrelin"]],
- ["dopamine","A rewarding outcome makes you want to repeat the behavior."],
- ["endorphins","After an intense workout, pain feels turned down."],
- ["substanceP","A pain signal needs to get from a sensory neuron into the spinal cord."],
- ["melatonin","It is dark and the body needs to wind down for sleep."]
-];
-
-/* 60-second rapid fire */
-const RAPID = [
- ["ghrelin","You haven’t eaten for hours and you’re hungry."],
- ["melatonin","You are preparing for sleep."],
- ["substanceP","You feel pain after touching something hot."],
- ["ach","Your muscles contract."],
- ["gaba","Your brain needs to decrease neural activity."],
- ["glutamate","Neurons need major excitatory signaling."],
- ["adrenaline","You suddenly need to respond to danger."],
- ["dopamine","You get a reward and feel motivated to repeat the action."],
- ["endorphins","A runner’s pain fades late in a race."],
- ["oxytocin","A parent bonds with a newborn during breastfeeding."],
- ["leptin","Fat cells report: energy stores are full."],
- ["serotonin","A neurotransmitter that regulates mood, sleep and appetite."],
- ["norepinephrine","The locus coeruleus fires and you snap to attention."],
- ["ach","Neurons lost in Alzheimer’s disease made this neurotransmitter."],
- ["dopamine","Neurons in the substantia nigra die in Parkinson’s disease."],
- ["melatonin","The pineal gland releases a hormone after sunset."],
- ["ghrelin","The stomach sends a hunger hormone to the hypothalamus."],
- ["adrenaline","The adrenal medulla floods the blood before a race."],
- ["gaba","Alcohol enhances this brake signal."],
- ["glutamate","Excessive excitation linked with seizures."],
- ["endorphins","Natural chemicals that bind opioid receptors."],
- ["substanceP","Sensory neurons activate NK1 receptors."],
- ["serotonin","SSRIs act on this neurotransmitter."],
- ["oxytocin","The posterior pituitary releases a hormone during childbirth."],
- ["leptin","The brain stops responding to this fat-cell hormone (resistance)."],
- ["norepinephrine","A brainstem neurotransmitter for arousal and stress."]
-];
-
-const RANKS = [[0,"Brain Intern"],[3,"Neural Detective"],[6,"Synapse Specialist"],[9,"Psych Researcher"],[12,"Neuro Expert"]];
-const DIFF = {rookie:{label:"ROOKIE",note:"Simple identification. Which chemical is this?"},
-  researcher:{label:"RESEARCHER",note:"Origin, destination and function. Where does it come from, and where does it act?"},
-  ap:{label:"AP PSYCH",note:"Application and scenarios, the way the exam asks. The hardest level."}};
-
-/* =================== STATE =================== */
-const KEY = "neural-night-shift-v1";
-function blank(){const chem={};IDS.forEach(k=>chem[k]={c:0,w:0,f:{}});return {chem,answered:0,correct:0,wrong:0,score:0,log:[],history:[],sound:false,diff:"rookie"};}
-function load(){try{const r=JSON.parse(localStorage.getItem(KEY));if(r&&r.chem){const b=blank();Object.assign(b,r);IDS.forEach(k=>{if(!b.chem[k])b.chem[k]={c:0,w:0,f:{}};});return b;}}catch(e){}return blank();}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
-let S = load();
-let view = "home", G = null, tick = null, labView = "cards";
-
-function mastery(id){const m=S.chem[id],f=m.f;if((f.id||f.func)&&f.origin&&f.dest&&f.dys&&m.c>=4)return "mastered";if(m.c+m.w>0)return "learning";return "unknown";}
-const masteredCount = () => IDS.filter(i=>mastery(i)==="mastered").length;
-function rank(){const n=masteredCount();let r=RANKS[0][1];RANKS.forEach(([t,name])=>{if(n>=t)r=name;});return r;}
-
-/* =================== HELPERS =================== */
-const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const shuffle = a => {a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
-function pickDistractors(id,n,opts={}){
-  const avoid = opts.noAvoid?[]:(AVOID[id]||[]);
-  const out = shuffle((CONF[id]||[]).filter(x=>!avoid.includes(x))).slice(0,2);
-  let rest = IDS.filter(x=>x!==id&&!out.includes(x)&&!avoid.includes(x));
-  if(opts.sameCat){const same=rest.filter(x=>C[x].cat===C[id].cat);rest=shuffle(same).concat(shuffle(rest.filter(x=>!same.includes(x))));}
-  else rest=shuffle(rest);
-  while(out.length<n)out.push(rest.shift());
-  return out;
-}
-function fromBank(r){const [chem,facet,lv,prompt,x]=r;const it={chem,facet,lv,prompt};
-  if(x&&x.o){it.kind="text";it.opts=x.o;it.ans=x.o[0];it.why=x.why;}else{it.kind="chem";it.d=x&&x.d;}return it;}
-function buildOptions(it){
-  if(it.kind==="text")return shuffle(it.opts.map(o=>({label:o,value:o})));
-  const ids = it.d?it.d.slice():[it.chem,...pickDistractors(it.chem,3,{noAvoid:it.noAvoid,sameCat:it.sameCat})];
-  return shuffle(ids).map(id=>({label:C[id].name,value:id}));
-}
-const clock = i => {const m=22*60+i*13;const h=Math.floor(m/60)%24,mm=m%60;return String(h).padStart(2,"0")+":"+String(mm).padStart(2,"0");};
-const plain = s => s;
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const starStr = n => "★".repeat(n)+"☆".repeat(3-n);
+function best(){try{return +localStorage.getItem(KEY)||0;}catch(e){return 0;}}
+function saveBest(n){try{if(n>best())localStorage.setItem(KEY,n);}catch(e){}}
 
-/* sound: off by default, very quiet */
-let actx=null;
-function blip(ok){if(!S.sound)return;try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();const o=actx.createOscillator(),g=actx.createGain();o.type="sine";o.frequency.value=ok?660:220;g.gain.setValueAtTime(0.0001,actx.currentTime);g.gain.exponentialRampToValueAtTime(0.04,actx.currentTime+0.02);g.gain.exponentialRampToValueAtTime(0.0001,actx.currentTime+0.25);o.connect(g).connect(actx.destination);o.start();o.stop(actx.currentTime+0.26);}catch(e){}}
-
-/* =================== ITEM POOLS =================== */
-function traceItems(){
-  const a = TRACE.map(([chem,from,to,q])=>({chem,facet:"origin",kind:"chem",prompt:q,path:{from,to},sameCat:true}));
-  const b = LOC.map(([chem,facet,q,o])=>({chem,facet,kind:"text",prompt:q,opts:o,ans:o[0],loc:facet}));
-  return a.concat(b);
-}
-const balItems = () => BAL.map(([chem,q,d])=>({chem,facet:"func",kind:"chem",prompt:q,gauge:true,d:d||((chem==="glutamate"||chem==="gaba")?["glutamate","gaba",...pickDistractors(chem==="gaba"?"glutamate":"gaba",4).filter(x=>x!=="glutamate"&&x!=="gaba").slice(0,2)]:null)}));
-const rapidItems = () => RAPID.map(([chem,q])=>({chem,facet:"id",kind:"chem",prompt:q}));
-function spread(items,n){ /* prefer distinct chemicals first */
-  const seen=new Set(),first=[],rest=[];shuffle(items).forEach(it=>{if(!seen.has(it.chem)){seen.add(it.chem);first.push(it);}else rest.push(it);});
-  return first.concat(rest).slice(0,n).sort(()=>Math.random()-.5);
+function choicesFor(id){
+  const kind = c => C[c].kind==="Hormone"?"h":"n";
+  const out = shuffle(MIX[id]||[]).slice(0,2);
+  const same = shuffle(IDS.filter(x=>x!==id&&!out.includes(x)&&kind(x)===kind(id)));
+  const other = shuffle(IDS.filter(x=>x!==id&&!out.includes(x)&&kind(x)!==kind(id)));
+  const pool = same.concat(other);
+  while(out.length<3) out.push(pool.shift());
+  return shuffle([id,...out]);
 }
 
-const MODES = {
-  shift:{title:"Night Shift Rounds",short:"ROUNDS",desc:"Ten mixed cases at your chosen difficulty.",tag:"ALL FACETS",
-    build(){const lv={rookie:1,researcher:2,ap:3}[S.diff];let pool=B.filter(r=>r[2]===lv).map(fromBank);
-      if(S.diff==="researcher")pool=pool.concat(LOC.map(([chem,facet,q,o])=>({chem,facet,kind:"text",prompt:q,opts:o,ans:o[0]})));
-      if(S.diff==="rookie")pool=pool.concat(rapidItems().slice(0,8));
-      return spread(pool,10);}},
-  detective:{title:"Chemical Detective",short:"DETECTIVE",desc:"Clues arrive one at a time. Name it early for more stars.",tag:"IDENTIFY",
-    build(){return shuffle(IDS).slice(0,6).map(chem=>({chem,facet:"id",kind:"chem",prompt:"Which chemical is it?",clues:DET[chem],noAvoid:true,sameCat:true}));}},
-  brain:{title:"What’s Happening in the Brain?",short:"SCENARIOS",desc:"Realistic AP Psychology situations. Spot the chemical at work.",tag:"APPLY",
-    build(){return spread(B.filter(r=>r[2]===3&&r[1]!=="dys").map(fromBank),8);}},
-  trace:{title:"Trace the Signal",short:"TRACE",desc:"Origin → ? → destination. Learn where each signal starts and where it acts.",tag:"ORIGIN · DEST",
-    build(){return spread(traceItems(),8);}},
-  balance:{title:"Brain Balance",short:"BALANCE",desc:"GO or BRAKE? Excitation, inhibition, and the signals in between.",tag:"GO / BRAKE",
-    build(){const it=balItems();const gb=shuffle(it.filter(x=>x.chem==="glutamate"||x.chem==="gaba")).slice(0,4);return shuffle(gb.concat(shuffle(it.filter(x=>!gb.includes(x)&&x.chem!=="glutamate"&&x.chem!=="gaba")).slice(0,4)));}},
-  rapid:{title:"The 60-Second Brain",short:"60 SEC",desc:"Rapid fire against the clock. No explanations until the end.",tag:"TIMED",
-    build(){return shuffle(rapidItems()).concat(shuffle(rapidItems()));}},
-  off:{title:"When the System Goes Off Balance",short:"OFF BALANCE",desc:"Dysregulation and the conditions associated with it.",tag:"DYSREGULATION",
-    build(){return spread(B.filter(r=>r[1]==="dys").map(fromBank),8);}},
-  review:{title:"Review Weak Areas",short:"REVIEW",desc:"",tag:"",build(){return [];}}
-};
+let G = null;
+const app = document.getElementById("app");
 
-/* =================== RENDER: SHELL =================== */
-const $app = document.getElementById("app");
-function renderTop(){
-  const n=masteredCount();
-  document.getElementById("progTxt").innerHTML=`NIGHT SHIFT · <b>${n} / 13</b> MASTERED<span>${esc(rank().toUpperCase())}</span>`;
-  document.getElementById("barFill").style.setProperty("--p",n/13);
-  const sb=document.getElementById("sndBtn");sb.textContent=S.sound?"SOUND ON":"SOUND OFF";sb.setAttribute("aria-pressed",S.sound);
-  const navKey = (view==="play"||view==="report")?"hub":view;
-  document.querySelectorAll(".nav button").forEach(b=>{b.toggleAttribute("aria-current",b.dataset.go===navKey);if(b.dataset.go===navKey)b.setAttribute("aria-current","page");});
-}
-function go(v){if(tick){clearInterval(tick);tick=null;}view=v;if(v!=="play"&&v!=="report")G=null;render();window.scrollTo(0,0);}
-function render(){
-  renderTop();
-  ({home:renderHome,hub:renderHub,play:renderPlay,report:renderReport,lab:renderLab,log:renderLog,how:renderHow})[view]();
-  if(view==="home")startScope();
+function home(){
+  G = null;
+  const b = best();
+  app.innerHTML = `
+    <h1 class="title">NEURAL<br><span>NIGHT SHIFT</span></h1>
+    <p class="lead">You’re a brain detective. Read the clues and guess which brain chemical it is.</p>
+    <ul class="steps">
+      <li><b>1</b>Read a clue.</li>
+      <li><b>2</b>Stuck? Tap <strong>Show another clue</strong>.</li>
+      <li><b>3</b>Tap the chemical you think it is. Fewer clues = more stars ★</li>
+    </ul>
+    <button class="btn" data-act="start" id="startBtn">Start</button>
+    ${b?`<p class="best">Your best: ${b} ★ out of 39</p>`:""}`;
+  document.getElementById("startBtn").focus();
 }
 
-/* =================== HOME =================== */
-function renderHome(){
-  const n=masteredCount();
-  $app.innerHTML=`<section class="home">
-    <canvas class="scope" id="scope" aria-hidden="true"></canvas>
-    <div>
-      <h1 class="title"><b>NEURAL</b><br>NIGHT SHIFT</h1>
-      <p class="sub">The brain never clocks out.</p>
-      <p class="label" style="margin:14px 0 0">Shift begins ${clock(0)} · 13 case files open</p>
-    </div>
-    <p class="desc">Investigate what is happening inside the brain and body. Identify the chemical, trace its signal, and learn what happens when the system goes off balance.</p>
-    <div class="cta">
-      <button class="btn primary" data-go="hub">Start night shift</button>
-      <button class="btn" data-go="lab">Brain lab</button>
-      <button class="btn ghost" data-go="how">How to play</button>
-    </div>
-    <div class="home-meta">
-      <div><div class="label" style="margin-bottom:8px">${n} / 13 chemicals mastered</div>
-        <div class="mastery-strip">${IDS.map(id=>`<i class="${mastery(id)}" title="${esc(C[id].name)}: ${mastery(id)}"></i>`).join("")}</div></div>
-      <div class="label">${S.answered} cases answered · rank: ${esc(rank())}</div>
-    </div>
-  </section>
-  <div class="foot">AP PSYCHOLOGY • NEUROTRANSMITTERS • HORMONES</div>`;
+function start(){
+  G = {order:shuffle(IDS),i:0,stars:0,results:[]};
+  newCase();
 }
-/* oscilloscope trace on the home screen */
-let scopeRAF=null;
-function startScope(){
-  cancelAnimationFrame(scopeRAF);
-  const cv=document.getElementById("scope");if(!cv)return;
-  const ctx=cv.getContext("2d");const dpr=window.devicePixelRatio||1;
-  const W=cv.clientWidth,H=cv.clientHeight;cv.width=W*dpr;cv.height=H*dpr;ctx.scale(dpr,dpr);
-  const still=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  let t=0;
-  function y(x,t){const p=((x+t)%260);let v=Math.sin((x+t)*0.035)*3;
-    if(p>120&&p<128)v-=(p-120)*4; else if(p>=128&&p<134)v+=-32+(p-128)*9; else if(p>=134&&p<142)v+=22-(p-134)*2.8;return H/2+v;}
-  function draw(){
-    ctx.clearRect(0,0,W,H);
-    ctx.strokeStyle="rgba(138,163,200,0.75)";ctx.lineWidth=1.25;ctx.beginPath();
-    for(let x=0;x<=W;x+=2){const yy=y(x,t);x?ctx.lineTo(x,yy):ctx.moveTo(x,yy);}ctx.stroke();
-    ctx.fillStyle="rgba(127,135,152,0.9)";ctx.font="10px 'IBM Plex Mono', monospace";
-    ctx.fillText("CH1 · −70 mV RESTING · ACTION POTENTIAL",8,14);
-    if(!still&&view==="home"){t+=0.6;scopeRAF=requestAnimationFrame(draw);}
+function newCase(){
+  const id = G.order[G.i];
+  G.cur = {id,shown:1,choices:choicesFor(id),picked:null};
+  draw();
+  window.scrollTo(0,0);
+}
+function draw(){
+  const c = G.cur, ch = C[c.id], done = c.picked!==null;
+  const worth = c.shown<=1?3:c.shown===2?2:1;
+  const clues = ch.clues.slice(0, done?ch.clues.length:c.shown).map((t,i)=>`<div class="clue"><small>CLUE ${i+1}</small><p>${esc(t)}</p></div>`).join("");
+  const opts = c.choices.map(id=>{
+    let cls="opt";
+    if(done){ if(id===c.id)cls+=" right"; else if(id===c.picked)cls+=" wrong"; else cls+=" dim"; }
+    return `<button class="${cls}" data-pick="${id}" ${done?"disabled":""}>${esc(C[id].name)}</button>`;
+  }).join("");
+  let result = "";
+  if(done){
+    const ok = c.picked===c.id, got = G.results[G.results.length-1].stars;
+    result = `<section class="result" id="result">
+      <div class="hd ${ok?"ok":"no"}">
+        <p class="big">${ok?`Correct! ${starStr(got)}`:"Not quite"}</p>
+        <p>${ok?`It’s <b>${esc(ch.name)}</b>.`:`You picked ${esc(C[c.picked].name)}. The answer is <b>${esc(ch.name)}</b>.`}</p>
+      </div>
+      <p class="trick">Remember: ${esc(ch.trick)}</p>
+      <dl class="facts">
+        <div><dt>What is it?</dt><dd>${esc(ch.kind)}</dd></div>
+        <div><dt>Made in</dt><dd>${esc(ch.from)}</dd></div>
+        <div><dt>Goes to</dt><dd>${esc(ch.to)}</dd></div>
+        <div><dt>Job</dt><dd>${esc(ch.job)}</dd></div>
+        <div><dt>If it goes wrong</dt><dd>${esc(ch.off)}</dd></div>
+      </dl>
+    </section>
+    <button class="btn" data-act="next" id="nextBtn">${G.i+1<G.order.length?"Next case →":"See my score →"}</button>`;
   }
+  app.innerHTML = `
+    <div class="top"><span>Case ${G.i+1} of ${G.order.length}</span><span class="stars">${G.stars} ★</span></div>
+    <div class="track"><i style="--p:${G.i/G.order.length}"></i></div>
+    <h2>Who am I?</h2>
+    <div class="clues">${clues}</div>
+    ${!done&&c.shown<ch.clues.length?`<button class="more" data-act="clue">+ Show another clue</button>`:""}
+    ${!done?`<p class="worth">Guess now for <b>${starStr(worth)}</b></p>`:""}
+    <div class="opts">${opts}</div>
+    ${result}`;
+  if(done){const r=document.getElementById("result");r.scrollIntoView({behavior:"smooth",block:"start"});}
+}
+function pick(id){
+  const c = G.cur; if(c.picked!==null) return;
+  c.picked = id;
+  const ok = id===c.id, s = ok?(c.shown<=1?3:c.shown===2?2:1):0;
+  G.stars += s;
+  G.results.push({id:c.id,ok,stars:s});
   draw();
 }
-
-/* =================== HUB =================== */
-function weakList(){
-  return IDS.filter(id=>S.chem[id].w>0&&mastery(id)!=="mastered").sort((a,b)=>S.chem[b].w-S.chem[a].w);
-}
-function renderHub(){
-  const weak=weakList();
-  const order=["shift","detective","brain","trace","balance","rapid","off"];
-  $app.innerHTML=`<div class="ph"><div><h2>Night shift</h2>
-    <p>Pick a mode. Every case explains its answer, and every miss goes into your Night Shift Log.</p></div></div>
-  <div class="hub-grid">
-    <div><div class="label" style="margin-bottom:8px">Difficulty · night shift rounds</div>
-      <div class="seg" role="group" aria-label="Difficulty">${Object.entries(DIFF).map(([k,v])=>`<button data-diff="${k}" aria-pressed="${S.diff===k}">${v.label}</button>`).join("")}</div>
-      <p class="diffnote">${esc(DIFF[S.diff].note)}</p></div>
-    ${weak.length?`<div class="callout"><p><b>${weak.length}</b> chemical${weak.length>1?"s":""} flagged for review: ${weak.slice(0,4).map(id=>esc(C[id].name)).join(", ")}${weak.length>4?"…":""}</p><button class="btn small" data-review="global">Review weak areas</button></div>`:""}
-    <div class="modes">${order.map((k,i)=>{const m=MODES[k];return `<button class="mode${i===0?" featured":""}" data-mode="${k}">
-      <span><h3>${esc(m.title)}</h3><p>${esc(m.desc)}${k==="shift"?` <span class="mono" style="font-size:11px;color:var(--muted)">· ${DIFF[S.diff].label}</span>`:""}</p></span><span class="tag">${m.tag}</span></button>`;}).join("")}</div>
-    <div class="callout"><p>Exam tomorrow? The final review table has all 13 chemicals on one screen.</p><button class="btn small ghost" data-lab="table">Open review table</button></div>
-  </div>`;
+function end(){
+  saveBest(G.stars);
+  const right = G.results.filter(r=>r.ok).length;
+  const missed = G.results.filter(r=>!r.ok);
+  app.innerHTML = `
+    <h2 style="text-align:center">Shift complete!</h2>
+    <p class="score">${G.stars} ★<small>You got ${right} out of ${G.results.length} right</small></p>
+    ${missed.length?`<h2 style="font-size:22px">Practice these</h2>
+      <div class="list">${missed.map(r=>`<div><b>${esc(C[r.id].name)}</b><span>${esc(C[r.id].trick)}</span></div>`).join("")}</div>`
+      :`<p class="lead" style="text-align:center">Perfect shift. Every case solved!</p>`}
+    <button class="btn" data-act="start" id="againBtn">Play again</button>
+    <button class="btn soft" data-act="home">Home</button>`;
+  window.scrollTo(0,0);
+  document.getElementById("againBtn").focus();
 }
 
-/* =================== PLAY =================== */
-function startMode(key,items){
-  const m=MODES[key];
-  G={mode:key,title:m.title,items:items||m.build(),i:0,results:[],tally:{},stars:0,cur:null};
-  if(key==="rapid"){G.time=60;G.end=Date.now()+60000;}
-  view="play";nextItem();window.scrollTo(0,0);
-  if(key==="rapid"){tick=setInterval(()=>{const left=Math.max(0,Math.ceil((G.end-Date.now())/1000));G.time=left;const t=document.getElementById("tleft");if(t){t.textContent=left;const tb=document.getElementById("tbar");if(tb)tb.style.setProperty("--p",left/60);document.getElementById("timer").classList.toggle("low",left<=10);}if(left<=0){clearInterval(tick);tick=null;finish();}},250);}
-}
-function nextItem(){
-  if(!G)return;
-  if(G.i>=G.items.length||(G.mode!=="rapid"&&G.i>=G.items.length)){finish();return;}
-  const it=G.items[G.i];
-  G.cur={it,options:buildOptions(it),chosen:null,ok:null,shown:it.clues?1:0};
-  render();
-}
-function answer(val){
-  const c=G.cur;if(!c||c.chosen!==null)return;
-  const it=c.it;c.chosen=val;
-  const ok = it.kind==="text"?val===it.ans:val===it.chem;c.ok=ok;
-  const chosenLabel = it.kind==="text"?val:C[val].name;
-  const ansLabel = it.kind==="text"?it.ans:C[it.chem].name;
-  c.why = whyText(it,val,ok);
-  c.remember = rememberLine(it,val);
-  let pts=ok?1:0;
-  if(it.clues&&ok){pts=c.shown<=1?3:c.shown===2?2:1;G.stars+=pts;}
-  record(it,ok,chosenLabel,ansLabel,c.why,c.remember);
-  G.results.push({chem:it.chem,ok,stars:it.clues?(ok?pts:0):null});
-  blip(ok);
-  if(G.mode==="rapid"){
-    render();
-    setTimeout(()=>{if(G&&view==="play"){G.i++;nextItem();}},ok?320:900);
-    return;
-  }
-  render();
-  const r=document.getElementById("reveal");if(r)r.scrollIntoView({behavior:"smooth",block:"nearest"});
-}
-function whyText(it,val,ok){
-  if(ok)return "";
-  const A=C[it.chem];
-  if(it.kind==="text")return it.why || `The better answer is “${it.ans}”. ${A.name}: ${A.brief}.`;
-  const X=C[val];
-  return `${X.name} is mainly linked to ${X.brief}. This case pointed to ${A.brief}, which makes ${A.name} the better answer.`;
-}
-function rememberLine(it,val){
-  if(it.kind==="chem"&&val&&val!==it.chem){const p=pairLine(val,it.chem);if(p)return p;return C[it.chem].mem.toUpperCase()+" · "+C[val].mem.toUpperCase();}
-  if(it.chem==="glutamate"||it.chem==="gaba")return "GLUTAMATE = GO · GABA = BRAKE";
-  return C[it.chem].mem;
-}
-function record(it,ok,chosenLabel,ansLabel,why,mem){
-  const m=S.chem[it.chem];S.answered++;
-  const t=G.tally[it.chem]=G.tally[it.chem]||{c:0,w:0};
-  if(ok){m.c++;S.correct++;S.score+=10;t.c++;m.f[it.facet]=true;}
-  else{m.w++;S.wrong++;t.w++;delete m.f[it.facet];
-    S.log.unshift({t:Date.now(),q:it.prompt,chose:chosenLabel,ans:ansLabel,why,mem,chem:it.chem,facet:it.facet});S.log=S.log.slice(0,100);}
-  save();renderTop();
-}
-function revealClue(){if(G.cur&&G.cur.chosen===null&&G.cur.shown<G.cur.it.clues.length){G.cur.shown++;render();}}
-
-function profileHTML(id){
-  const c=C[id];const flow=c.cat==="hormone"?"Hormones travel through the bloodstream to target tissues.":"Released by neurons; acts on target cells through receptors.";
-  return `<dl class="profile">
-    <dt>TYPE</dt><dd>${esc(c.type)}</dd>
-    <dt>ORIGIN</dt><dd>${esc(c.origin)}</dd>
-    <dt>DESTINATION</dt><dd>${esc(c.dest)}<span class="flow">${flow}</span></dd>
-    <dt>JOB</dt><dd>${esc(c.job.join(" · "))}</dd>
-    <dt>WHEN IT’S OFF</dt><dd>${esc(c.off)}</dd>
-    <dt>AP PSYCH</dt><dd>${esc(c.ap)}</dd>
-    <dt>MEMORY</dt><dd class="memory">“${esc(c.mem)}”</dd>
-  </dl>`;
-}
-function pipsHTML(){
-  if(G.mode==="rapid")return "";
-  return `<span class="pips" aria-hidden="true">${G.items.map((_,i)=>{const r=G.results[i];return `<i class="${r?(r.ok?"ok":"no"):(i===G.i?"cur":"")}"></i>`;}).join("")}</span>`;
-}
-function renderPlay(){
-  const c=G.cur,it=c.it,done=c.chosen!==null;
-  const caseNo = String(G.i+1).padStart(2,"0");
-  let extra="";
-  if(G.mode==="rapid"){
-    extra=`<div class="timer${G.time<=10?" low":""}" id="timer"><span class="t" id="tleft">${G.time}</span><span class="tb"><i id="tbar" style="--p:${G.time/60}"></i></span><span class="label">${G.results.filter(r=>r.ok).length} / ${G.results.length}</span></div>`;
-  }
-  if(it.clues){
-    const st=c.shown<=1?3:c.shown===2?2:1;
-    extra+=`<div class="clues">${it.clues.map((cl,i)=>i<c.shown||done?`<div class="clue"><span>CLUE ${String(i+1).padStart(2,"0")}</span><p>${esc(cl)}</p></div>`:"").join("")}
-      ${!done&&c.shown<it.clues.length?`<button class="clue hidden" data-act="clue" style="text-align:left;width:100%"><span>CLUE ${String(c.shown+1).padStart(2,"0")}</span><p style="font-size:14px;font-family:var(--f-mono);letter-spacing:.1em">REVEAL NEXT CLUE →</p></button>`:""}</div>
-      ${!done?`<div class="label">Answer now for <span class="stars">${"★".repeat(st)}<s>${"★".repeat(3-st)}</s></span></div>`:""}`;
-  }
-  if(it.path){
-    const isHorm=C[it.chem].cat==="hormone";
-    extra+=`<div class="trace"><div class="node"><small>ORIGIN</small>${esc(it.path.from)}</div><span class="arrow">→</span>
-      <div class="node q${done?" hit":""}">${done?esc(C[it.chem].name.toUpperCase()):"?"}</div><span class="arrow">→</span>
-      <div class="node"><small>DESTINATION</small>${esc(it.path.to)}</div>
-      <div class="via">${isHorm?"signal travels through the bloodstream":"signal crosses a synapse to receptors"}</div></div>`;
-  }
-  if(it.loc){
-    const ch=C[it.chem];
-    const left=it.loc==="origin"?(done?esc(it.ans.toUpperCase()):"?"):esc(ch.o2.toUpperCase());
-    const right=it.loc==="dest"?(done?esc(it.ans.toUpperCase()):"?"):esc(ch.d2.toUpperCase());
-    extra+=`<div class="trace"><div class="node${it.loc==="origin"?" q"+(done?" hit":""):""}"><small>ORIGIN</small>${left}</div><span class="arrow">→</span>
-      <div class="node" style="color:var(--ink)">${esc(ch.name.toUpperCase())}</div><span class="arrow">→</span>
-      <div class="node${it.loc==="dest"?" q"+(done?" hit":""):""}"><small>DESTINATION</small>${right}</div>
-      <div class="via">${it.loc==="origin"?"origin = where it is produced or released":"destination = where it acts"}</div></div>`;
-  }
-  if(it.gauge){
-    const pos = !done?50:it.chem==="glutamate"?92:it.chem==="gaba"?8:50;
-    const read = !done?"Reading…":it.chem==="glutamate"?"GO · excitatory":it.chem==="gaba"?"BRAKE · inhibitory":`Not GO or BRAKE · ${C[it.chem].name}: ${C[it.chem].brief}`;
-    extra+=`<div class="gauge"><div class="g-ends"><span class="brk">GABA<small>BRAKE · INHIBIT</small></span><span class="go" style="text-align:right">GLUTAMATE<small>GO · EXCITE</small></span></div>
-      <div class="g-track"><i class="g-needle" style="left:${pos}%"></i></div><div class="g-read">${esc(read)}</div></div>`;
-  }
-  const opts=c.options.map((o,i)=>{
-    let cls="opt";
-    if(done){const isAns=it.kind==="text"?o.value===it.ans:o.value===it.chem;if(isAns)cls+=" right";else if(o.value===c.chosen)cls+=" wrong";else cls+=" dim";}
-    return `<button class="${cls}" data-ans="${esc(o.value)}" ${done?"disabled":""}><span class="n">${i+1}</span><span class="lab">${esc(o.label)}</span></button>`;}).join("");
-
-  let reveal="";
-  if(done&&G.mode!=="rapid"){
-    const A=C[it.chem];
-    const last=G.i+1>=G.items.length;
-    const okNotes=["Signal identified.","The chemistry checks out.","Case closed."];
-    const head = c.ok
-      ? `<div class="rv-head ok"><h3>${esc(fullName(it.chem))} ✓</h3><span class="note">${it.clues?`<span class="stars">${"★".repeat(G.results[G.results.length-1].stars)}<s>${"★".repeat(3-G.results[G.results.length-1].stars)}</s></span>`:okNotes[G.i%3]}</span></div>`
-      : `<div class="rv-head no"><h3>Not quite</h3><span class="note">Investigate the clue</span></div>
-         <div class="miss"><p>You chose <b>${esc(it.kind==="text"?c.chosen:C[c.chosen].name)}</b>. ${esc(c.why)}</p>
-         ${it.kind==="text"?`<p>Answer: <b>${esc(it.ans)}</b></p>`:""}
-         <div class="remember"><span>REMEMBER</span>${esc(c.remember)}</div></div>`;
-    reveal=`<div class="reveal" id="reveal">${head}
-      ${!c.ok?`<div class="rv-head" style="border-bottom:1px solid var(--line)"><h3 style="font-size:16px;color:var(--ink)">${esc(fullName(it.chem))}</h3><span class="note">case file</span></div>`:""}
-      ${profileHTML(it.chem)}
-      <div class="rv-foot"><span class="hint">ENTER ↵ to continue</span><button class="btn primary" data-act="next">${last?"End shift →":"Next case →"}</button></div></div>`;
-  }
-  const total = G.mode==="rapid"?"":` / ${String(G.items.length).padStart(2,"0")}`;
-  $app.innerHTML=`<section class="case ${done&&G.mode==="rapid"?(c.ok?"flash-ok":"flash-no"):""}">
-    <div class="case-head"><span class="no">CASE ${caseNo}${total}</span><span>${clock(G.i)}</span><span>${esc(MODES[G.mode].short)}</span>${pipsHTML()}<span class="sp"><button data-act="quit">End shift ✕</button></span></div>
-    ${extra}
-    <p class="prompt">${esc(it.prompt)}</p>
-    <div class="opts">${opts}</div>
-    ${reveal}
-  </section>`;
-}
-function finish(){
-  if(!G)return;if(tick){clearInterval(tick);tick=null;}
-  const correct=G.results.filter(r=>r.ok).length;
-  S.history.unshift({t:Date.now(),mode:G.mode,correct,total:G.results.length,stars:G.stars});S.history=S.history.slice(0,50);save();
-  view="report";render();window.scrollTo(0,0);
-}
-
-/* =================== REPORT =================== */
-function sessionBuckets(){
-  const t=G.tally;const ids=Object.keys(t);
-  const strong=ids.filter(id=>t[id].c>0&&t[id].w===0).sort((a,b)=>t[b].c-t[a].c).slice(0,3);
-  const weak=ids.filter(id=>t[id].w>0).sort((a,b)=>t[b].w-t[a].w);
-  return {strong,weak};
-}
-function renderReport(){
-  const correct=G.results.filter(r=>r.ok).length,total=G.results.length;
-  const {strong,weak}=sessionBuckets();
-  const names=(arr,cls)=>arr.length?`<div class="names ${cls}">${arr.map(id=>`<span>${esc(C[id].name)}</span>`).join("")}</div>`:`<span style="color:var(--muted);font-size:15px">${cls==="weak"?"Nothing flagged. Clean shift.":"Not enough data yet."}</span>`;
-  $app.innerHTML=`<section class="report">
-    <div><div class="label">${G.mode==="rapid"?"Night shift complete":"Shift report"} · ${esc(G.title)}</div>
-      <div class="big">${correct}<small> / ${total}</small></div>
-      ${G.mode==="detective"?`<div class="stars" style="font-size:18px;margin-top:6px">${G.stars} ★ of ${total*3}</div>`:""}
-      <p style="color:var(--ink2);margin:8px 0 0">${weak.length?"Your shift isn’t over yet. A short review round targets exactly what you missed.":"The chemistry checks out. Try a harder mode or a different angle."}</p></div>
-    <div class="rep-card">
-      <div class="rep-row"><span class="label">Chemicals mastered</span><span class="v">${masteredCount()} / 13 <span class="label" style="margin-left:8px">${esc(rank())}</span></span></div>
-      <div class="rep-row"><span class="label">Strongest</span>${names(strong,"good")}</div>
-      <div class="rep-row"><span class="label">Needs review</span>${names(weak,"weak")}</div>
-    </div>
-    <div class="cta">
-      ${weak.length?`<button class="btn primary" data-review="session">Review weak areas</button>`:""}
-      <button class="btn${weak.length?"":" primary"}" data-mode="${G.mode==="review"?"shift":G.mode}">Run it again</button>
-      <button class="btn ghost" data-go="hub">Back to night shift</button>
-      <button class="btn ghost" data-go="lab">Brain lab</button>
-    </div>
-  </section>`;
-}
-function startReview(ids){
-  if(!ids.length)ids=weakList();
-  if(!ids.length){go("hub");return;}
-  const all=B.map(fromBank).concat(traceItems());
-  let items=[];
-  ids.slice(0,5).forEach(id=>{
-    const f=S.chem[id].f;
-    const mine=shuffle(all.filter(x=>x.chem===id));
-    const missing=mine.filter(x=>!f[x.facet]);
-    const pick=(missing.length?missing:mine).slice(0,ids.length<=2?4:2);
-    items=items.concat(pick);
-  });
-  /* add logged mistakes' facets for these chemicals */
-  startMode("review",shuffle(items).slice(0,8));
-  G.title="Weak-area review";
-}
-
-/* =================== BRAIN LAB =================== */
-function cardHTML(id){
-  const c=C[id],st=mastery(id),f=S.chem[id].f;
-  const fac=[["ID",f.id||f.func],["ORIGIN",f.origin],["DEST",f.dest],["OFF",f.dys]];
-  return `<details class="card"><summary>
-    <div class="row1"><span class="nm">${esc(fullName(id))}</span><span class="state ${st}">${st}</span></div>
-    <div class="row1"><span class="mm">“${esc(c.mem)}”</span><span class="chip ${c.cat}">${c.cat==="hormone"?"Hormone":c.type.startsWith("Neuropeptide")?"Neuropeptide":"Neurotransmitter"}</span></div>
-    <div class="row1"><span class="facets">${fac.map(([l,on])=>`<i class="${on?"on":""}">${l}</i>`).join("")}</span><span class="more">OPEN FILE +</span></div>
-  </summary>${profileHTML(id)}</details>`;
-}
-function renderLab(){
-  const tabs=`<div class="seg" role="group" aria-label="Brain lab view"><button data-lab="cards" aria-pressed="${labView==="cards"}">CASE FILES</button><button data-lab="table" aria-pressed="${labView==="table"}">FINAL REVIEW TABLE</button></div>`;
-  let body;
-  if(labView==="cards"){
-    body=`<div class="ovd" style="margin-top:4px">
-      <div><h4>ORIGIN</h4><p>Where the chemical is produced or released. Neurotransmitters come from neurons; hormones come from glands or tissues such as the pineal gland, stomach or fat cells.</p></div>
-      <div><h4>DESTINATION</h4><p>Where it acts. Neurotransmitters cross a synapse to receptors on target cells. Hormones travel through the bloodstream to target tissues. A destination is often many places, not one spot.</p></div></div>
-    <div class="group-h"><h3>NEUROTRANSMITTERS</h3><p>${NT.length} · including neuropeptides</p></div>
-    <div class="lab-grid">${NT.map(cardHTML).join("")}</div>
-    <div class="group-h"><h3>HORMONES</h3><p>${HO.length} · carried by the blood</p></div>
-    <div class="lab-grid">${HO.map(cardHTML).join("")}</div>
-    <p class="diffnote" style="margin-top:18px">A chemical becomes MASTERED once you’ve answered it correctly across identification or function, origin, destination and dysregulation (at least 4 correct). A miss on a facet means earning that facet again.</p>`;
-  }else{
-    body=`<p class="diffnote" style="margin:0 0 12px">All 13 chemicals. Tap a row to expand it with the AP Psych connection and memory trick.</p>
-    <div class="tbl-wrap"><table><thead><tr><th>Chemical</th><th>Type</th><th>Origin</th><th>Destination</th><th>Main job</th><th>Dysregulation</th></tr></thead><tbody>
-    ${IDS.map(id=>{const c=C[id];return `<tr class="main" data-row="${id}" tabindex="0"><td>${esc(fullName(id))}</td><td><span class="chip ${c.cat}">${c.cat==="hormone"?"Hormone":c.type.startsWith("Neuropeptide")?"Neuropeptide":"NT"}</span></td><td>${esc(c.o2)}</td><td>${esc(c.d2)}</td><td>${esc(c.j2)}</td><td>${esc(c.f2)}</td></tr>
-      <tr class="ext" data-ext="${id}" hidden><td colspan="6"><b>AP PSYCH</b>${esc(c.ap)}<br><b>MEMORY</b><span style="color:var(--amber);font-family:var(--f-mono)">“${esc(c.mem)}”</span><br><b>WHEN IT’S OFF</b>${esc(c.off)}</td></tr>`;}).join("")}
-    </tbody></table></div>`;
-  }
-  $app.innerHTML=`<div class="ph"><div><h2>Brain lab</h2><p>Every chemical’s case file: type, origin, destination, job, what happens when it’s off, the AP Psych connection, and a memory trick.</p></div>${tabs}</div>${body}`;
-}
-
-/* =================== LOG =================== */
-function renderLog(){
-  const L=S.log;
-  const masteredInLog=L.filter(e=>mastery(e.chem)==="mastered").length;
-  $app.innerHTML=`<div class="ph"><div><h2>Night shift log</h2><p>Every missed case lands here with the reason and a memory trick. Clear entries once the chemical is mastered.</p></div>
-    <div class="cta">${L.length?`<button class="btn small" data-review="global">Review weak areas</button>`:""}
-    ${masteredInLog?`<button class="btn small ghost" data-act="clearMastered">Clear mastered (${masteredInLog})</button>`:""}
-    <button class="btn small danger" data-act="reset">Reset progress</button></div></div>
-  ${L.length?`<div class="log">${L.map((e,i)=>`<article class="entry">
-      <div class="ft"><span class="label">${new Date(e.t).toLocaleString([], {month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})} · ${esc(C[e.chem].name)}</span><span class="state ${mastery(e.chem)}">${mastery(e.chem)}</span></div>
-      <p class="q">${esc(e.q)}</p>
-      <div class="pair"><div class="c1"><span class="label">What you chose</span><b>${esc(e.chose)}</b></div><div class="c2"><span class="label">Correct answer</span><b>${esc(e.ans)}</b></div></div>
-      <p class="why"><span class="label">Why </span>${esc(e.why)}</p>
-      <div class="remember"><span>MEMORY TRICK</span>${esc(e.mem)}</div>
-      <div class="ft"><span></span><button class="btn small ghost" data-del="${i}">Got it, remove</button></div>
-    </article>`).join("")}</div>`
-  :`<div class="empty"><p style="margin:0 0 12px">No mistakes logged. Either you’re flawless or your shift hasn’t started.</p><button class="btn primary" data-go="hub">Start night shift</button></div>`}`;
-}
-
-/* =================== HOW TO PLAY =================== */
-function renderHow(){
-  $app.innerHTML=`<div class="ph"><div><h2>How to play</h2><p>You are the night-shift brain investigator. Each case describes something happening in the brain or body. Your job is to name the chemical behind it.</p></div></div>
-  <div class="loop" style="margin-bottom:18px"><span>SEE IT</span><em>→</em><span>THINK</span><em>→</em><span>EXPLAIN</span><em>→</em><span>TRACE IT</span><em>→</em><span>UNDERSTAND IT</span><em>→</em><span>APPLY IT</span><em>→</em><span>WATCH IT GO WRONG</span><em>→</em><span>REMEMBER IT</span></div>
-  <div class="how">
-    <div><h4>THE LOOP</h4><p>Scenario → your guess → a full explanation → next case. Every answer opens the chemical’s case file.</p></div>
-    <div><h4>CHEMICAL DETECTIVE</h4><p>Clues arrive one by one. Answer after 1 clue for ★★★, after 2 for ★★, after 3 or more for ★.</p></div>
-    <div><h4>TRACE THE SIGNAL</h4><p>Origin → ? → destination. Origin is where a chemical is produced; destination is where it acts.</p></div>
-    <div><h4>BRAIN BALANCE</h4><p>GLUTAMATE = GO. GABA = BRAKE. Plus alertness, stress, reward and pain signals.</p></div>
-    <div><h4>THE 60-SECOND BRAIN</h4><p>Rapid fire against the clock. Misses still go into your log.</p></div>
-    <div><h4>MASTERY</h4><p>UNKNOWN → LEARNING → MASTERED. Mastery needs correct answers on identification or function, origin, destination and dysregulation.</p></div>
-    <div><h4>KEYBOARD</h4><p>Press 1 to 4 to answer, Enter for the next case, C to reveal a clue.</p></div>
-    <div><h4>SAVED PROGRESS</h4><p>Progress is saved in this browser. Close the tab and your shift picks up where you left off.</p></div>
-  </div>
-  <div class="cta" style="margin-top:22px"><button class="btn primary" data-go="hub">Start night shift</button><button class="btn danger" data-act="reset">Reset progress</button></div>`;
-}
-
-/* =================== MODAL =================== */
-function confirmReset(){
-  const m=document.getElementById("modal");
-  m.innerHTML=`<div role="dialog" aria-modal="true" aria-labelledby="mt"><h3 id="mt">Reset all progress?</h3><p>This clears mastery, scores, history and your Night Shift Log on this device. It cannot be undone.</p>
-    <div class="act"><button class="btn ghost small" data-act="mClose" id="mCancel">Keep progress</button><button class="btn danger small" data-act="mReset">Reset everything</button></div></div>`;
-  m.hidden=false;document.getElementById("mCancel").focus();
-}
-
-/* =================== EVENTS =================== */
 document.addEventListener("click",e=>{
-  const t=e.target.closest("button,[data-row]");if(!t)return;
-  const d=t.dataset;
-  if(d.go){go(d.go);return;}
-  if(d.diff){S.diff=d.diff;save();render();return;}
-  if(d.mode){startMode(d.mode);return;}
-  if(d.review){startReview(d.review==="session"&&G?sessionBuckets().weak:[]);return;}
-  if(d.lab){labView=d.lab;if(view!=="lab"){view="lab";}render();window.scrollTo(0,0);return;}
-  if(d.row){const ext=document.querySelector(`[data-ext="${d.row}"]`);ext.hidden=!ext.hidden;t.classList.toggle("open",!ext.hidden);return;}
-  if(d.ans!==undefined){answer(d.ans);return;}
-  if(d.del!==undefined){S.log.splice(+d.del,1);save();render();return;}
-  switch(d.act){
-    case "next":G.i++;nextItem();window.scrollTo(0,0);break;
-    case "clue":revealClue();break;
-    case "quit":if(G&&G.results.length)finish();else go("hub");break;
-    case "clearMastered":S.log=S.log.filter(e=>mastery(e.chem)!=="mastered");save();render();break;
-    case "reset":confirmReset();break;
-    case "mClose":document.getElementById("modal").hidden=true;break;
-    case "mReset":S=blank();save();document.getElementById("modal").hidden=true;go("home");break;
-  }
+  const b = e.target.closest("button"); if(!b) return;
+  if(b.dataset.pick){pick(b.dataset.pick);return;}
+  const a = b.dataset.act;
+  if(a==="start") start();
+  else if(a==="home") home();
+  else if(a==="clue"){G.cur.shown++;draw();}
+  else if(a==="next"){G.i++; G.i<G.order.length?newCase():end();}
 });
-document.getElementById("sndBtn").addEventListener("click",e=>{e.stopPropagation();S.sound=!S.sound;save();renderTop();blip(true);});
-document.addEventListener("keydown",e=>{
-  if(e.key==="Escape"){document.getElementById("modal").hidden=true;}
-  if(e.target.closest&&e.target.closest("[data-row]")&&(e.key==="Enter"||e.key===" ")){e.preventDefault();e.target.click();return;}
-  if(view!=="play"||!G||!G.cur||e.metaKey||e.ctrlKey||e.altKey)return;
-  const c=G.cur;
-  if(c.chosen===null&&/^[1-4]$/.test(e.key)){const o=c.options[+e.key-1];if(o)answer(o.value);}
-  else if(c.chosen===null&&(e.key==="c"||e.key==="C")&&c.it.clues)revealClue();
-  else if(c.chosen!==null&&e.key==="Enter"&&G.mode!=="rapid"){e.preventDefault();G.i++;nextItem();window.scrollTo(0,0);}
-});
-window.addEventListener("resize",()=>{if(view==="home")startScope();});
 
-render();
+home();
 </script>
 </body>
 </html>

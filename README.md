@@ -2,27 +2,21 @@
 
 *The brain never clocks out.*
 
-An AP Psychology study game for learning 13 neurotransmitters and hormones through scenarios, retrieval practice and short explanations.
+A simple AP Psychology detective game. Read the clues, guess the brain chemical, and learn what it does.
 
 **Play:** https://haresh-thiyagarajan.github.io/neural-night-shift/
 
+## How to play
+
+1. Read a clue.
+2. Stuck? Tap **Show another clue**.
+3. Tap the chemical you think it is. Fewer clues = more stars.
+
+After each answer you see where the chemical is made, where it goes, its job, what happens if it goes wrong, and a memory trick.
+
 ## Chemicals
 
-Dopamine, Serotonin, Norepinephrine, Glutamate, GABA, Endorphins, Substance P, Acetylcholine, Adrenaline (Epinephrine), Leptin, Ghrelin, Melatonin, Oxytocin.
-
-Each one has a case file: type, origin, destination, job, what happens when it's off, the AP Psych connection, and a memory trick.
-
-## Modes
-
-- **Night Shift Rounds** at Rookie, Researcher or AP Psych difficulty
-- **Chemical Detective**: clues one at a time, fewer clues earn more stars
-- **What's Happening in the Brain?**: real-life scenarios
-- **Trace the Signal**: origin → ? → destination
-- **Brain Balance**: Glutamate = GO, GABA = BRAKE
-- **The 60-Second Brain**: timed rapid fire
-- **When It's Off**: dysregulation and associated conditions
-
-Plus the Brain Lab, a final review table, a mistake log, mastery tracking and a weak-area review round. Progress is saved in your browser.
+Dopamine, Serotonin, Norepinephrine, Glutamate, GABA, Endorphins, Substance P, Acetylcholine, Adrenaline, Leptin, Ghrelin, Melatonin, Oxytocin.
 
 ## Run it
 
