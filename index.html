@@ -103,6 +103,41 @@ h2{font-family:var(--f-display);font-weight:600;font-size:30px;margin:0;letter-s
   .opts{grid-template-columns:1fr}
   .facts div{grid-template-columns:1fr;gap:2px}
 }
+
+/* ---------- detective layer ---------- */
+.badge-row{display:flex;align-items:center;gap:14px}
+.badge-row svg{flex:none}
+.namebox{display:grid;gap:6px}
+.namebox label{font-weight:700;font-size:17px}
+.namebox input{font:inherit;font-size:20px;color:var(--ink);background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:14px 16px;width:100%}
+.namebox input:focus{border-color:var(--blue);outline:none}
+.file{position:relative;background:#2a2519;border:2px solid #5a4c30;border-radius:4px 14px 14px 14px;padding:18px 18px 16px;margin-top:14px}
+.file::before{content:"";position:absolute;top:-16px;left:-2px;width:150px;height:16px;background:#2a2519;border:2px solid #5a4c30;border-bottom:0;border-radius:8px 8px 0 0}
+.file .tab{position:absolute;top:-14px;left:12px;font-family:var(--f-mono);font-size:13px;letter-spacing:.12em;color:var(--amber)}
+.file .conf{position:absolute;top:12px;right:14px;font-family:var(--f-mono);font-size:12px;letter-spacing:.14em;color:#e39a7a;border:2px solid #e39a7a88;border-radius:4px;padding:1px 6px;transform:rotate(4deg)}
+.file .story{margin:6px 0 0;font-size:21px;line-height:1.45;color:#f6eedb;padding-right:92px}
+.clue{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start}
+.clue svg{margin-top:4px}
+.more{display:flex;align-items:center;justify-content:center;gap:10px}
+.lineup-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.lineup-h h3{margin:0;font-family:var(--f-display);font-weight:600;font-size:24px}
+.opt{display:flex;align-items:center;gap:12px;text-align:left}
+.av{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-display);font-weight:600;font-size:18px;color:#10131a}
+.opt .who{display:grid;line-height:1.2;min-width:0}
+.opt .who small{font-size:13px;font-weight:400;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.opt.right .who small,.opt.wrong .who small{color:inherit}
+.result{position:relative}
+.stamp{position:absolute;top:14px;right:14px;font-family:var(--f-display);font-weight:600;font-size:20px;letter-spacing:.12em;border:3px solid;border-radius:6px;padding:4px 10px;transform:rotate(-10deg);animation:stamp .35s cubic-bezier(.2,1.6,.4,1) both}
+.stamp.ok{color:var(--sage);border-color:var(--sage)}
+.stamp.no{color:var(--rust);border-color:var(--rust)}
+@keyframes stamp{from{transform:rotate(-10deg) scale(2.2);opacity:0}to{transform:rotate(-10deg) scale(1);opacity:1}}
+.result .hd{padding-right:150px}
+.streak{color:var(--amber)}
+.roll{margin:0;padding:10px 18px;border-top:2px solid var(--line);font-weight:700;color:var(--amber)}
+.rank{display:grid;justify-items:center;gap:6px;text-align:center}
+.rank .r{font-family:var(--f-display);font-weight:600;font-size:30px;margin:0;color:var(--amber)}
+.rank p{margin:0;color:var(--ink2)}
+@media (max-width:480px){.file .story{padding-right:0;padding-top:22px}.result .hd{padding-right:18px;padding-top:58px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -200,27 +235,58 @@ function choicesFor(id){
   return shuffle([id,...out]);
 }
 
+
+/* The mystery for each case */
+const STORY = {
+  dopamine:"Someone in Brain City keeps handing out rewards. Now everyone wants to do the same thing again and again!",
+  serotonin:"One quiet worker is helping manage Brain City’s moods, sleep and snack times. Who is it?",
+  norepinephrine:"Suddenly every neuron in Brain City is wide awake and paying close attention. Who flipped the alert switch?",
+  glutamate:"Neurons all over Brain City are firing more and more. Someone pressed the gas pedal!",
+  gaba:"Everything in Brain City is calming down and slowing down. Someone hit the brakes!",
+  endorphins:"A marathon runner should be hurting, but the pain is fading away. Who stepped in to help?",
+  substanceP:"Ouch! Someone touched a hot pan, and a pain message raced into the spinal cord. Who delivered it?",
+  ach:"A message just jumped from a nerve to a muscle, and the arm moved. Who carried it?",
+  adrenaline:"Footsteps in a dark alley! Hearts are pounding and lungs are pumping. Who sounded the alarm?",
+  leptin:"A message from fat cells told the brain: we have plenty of energy stored. Who sent it?",
+  ghrelin:"It’s been hours since lunch and stomachs are growling all over town. Who is behind the hunger?",
+  melatonin:"The sun went down and all of Brain City is getting sleepy. Who dimmed the lights?",
+  oxytocin:"A parent and a newborn baby are forming a strong bond. Who is helping them connect?"
+};
+const AVC = ["#9db6dc","#b9a8e0","#9fd0ac","#e6be7a"];
+const RANKS = [[0,"Rookie Detective","Every great detective starts somewhere."],[10,"Junior Detective","You’re getting the hang of this."],[20,"Senior Detective","Sharp eyes. The brain can’t hide much from you."],[30,"Chief Detective","Brain City is safer with you on the case."],[36,"Master Sleuth","Legendary. You cracked almost every case on the first clue."]];
+const ICON = {
+  glass:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="6.5"/><path d="M15 15l6 6"/></svg>`,
+  badge:(size,color)=>`<svg width="${size}" height="${size}" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 3l7 7 10-1 2 10 8 6-5 9 5 9-8 6-2 10-10-1-7 7-7-7-10 1-2-10-8-6 5-9-5-9 8-6 2-10 10 1z" fill="${color}" fill-opacity=".18" stroke="${color}" stroke-width="2.5"/><path d="M32 18l4.2 8.6 9.4 1.3-6.8 6.6 1.6 9.4L32 39.5l-8.4 4.4 1.6-9.4-6.8-6.6 9.4-1.3z" fill="${color}"/></svg>`
+};
+function rankFor(stars){let r=RANKS[0];RANKS.forEach(x=>{if(stars>=x[0])r=x;});return r;}
+function getName(){try{return localStorage.getItem(KEY+"-name")||"";}catch(e){return "";}}
+function setName(n){try{localStorage.setItem(KEY+"-name",n);}catch(e){}}
+
 let G = null;
 const app = document.getElementById("app");
 
 function home(){
   G = null;
-  const b = best();
+  const b = best(), nm = getName();
   app.innerHTML = `
-    <h1 class="title">NEURAL<br><span>NIGHT SHIFT</span></h1>
-    <p class="lead">You’re a brain detective. Read the clues and guess which brain chemical it is.</p>
+    <div class="badge-row">${ICON.badge(64,"#e6be7a")}<h1 class="title" style="margin:0">NEURAL<br><span>NIGHT SHIFT</span></h1></div>
+    <p class="lead">Strange things are happening inside Brain City. You’re the detective on the night shift. Read the evidence and catch the brain chemical behind each case.</p>
     <ul class="steps">
-      <li><b>1</b>Read a clue.</li>
-      <li><b>2</b>Stuck? Tap <strong>Show another clue</strong>.</li>
-      <li><b>3</b>Tap the chemical you think it is. Fewer clues = more stars ★</li>
+      <li><b>1</b>Read the mystery and the first clue.</li>
+      <li><b>2</b>Stuck? Tap <strong>Search for another clue</strong>.</li>
+      <li><b>3</b>Accuse a suspect. Fewer clues = more stars ★</li>
     </ul>
-    <button class="btn" data-act="start" id="startBtn">Start</button>
-    ${b?`<p class="best">Your best: ${b} ★ out of 39</p>`:""}`;
-  document.getElementById("startBtn").focus();
+    <div class="namebox"><label for="detName">Your detective name</label><input id="detName" maxlength="20" autocomplete="off" placeholder="Detective Sam" value="${esc(nm)}"></div>
+    <button class="btn" data-act="start" id="startBtn">Start my shift</button>
+    ${b?`<p class="best">Your best: ${b} ★ out of 39 · ${esc(rankFor(b)[1])}</p>`:""}`;
 }
+const det = () => G&&G.name?`Detective ${G.name}`:"Detective";
 
 function start(){
-  G = {order:shuffle(IDS),i:0,stars:0,results:[]};
+  const inp=document.getElementById("detName");
+  let nm = inp?inp.value.trim().replace(/^detective\s+/i,""):(G?G.name:getName());
+  setName(nm);
+  G = {order:shuffle(IDS),i:0,stars:0,results:[],streak:0,name:nm};
   newCase();
 }
 function newCase(){
@@ -232,20 +298,24 @@ function newCase(){
 function draw(){
   const c = G.cur, ch = C[c.id], done = c.picked!==null;
   const worth = c.shown<=1?3:c.shown===2?2:1;
-  const clues = ch.clues.slice(0, done?ch.clues.length:c.shown).map((t,i)=>`<div class="clue"><small>CLUE ${i+1}</small><p>${esc(t)}</p></div>`).join("");
-  const opts = c.choices.map(id=>{
+  const clues = ch.clues.slice(0, done?ch.clues.length:c.shown).map((t,i)=>`<div class="clue">${ICON.glass}<div><small>EVIDENCE #${i+1}</small><p>${esc(t)}</p></div></div>`).join("");
+  const opts = c.choices.map((id,i)=>{
     let cls="opt";
     if(done){ if(id===c.id)cls+=" right"; else if(id===c.picked)cls+=" wrong"; else cls+=" dim"; }
-    return `<button class="${cls}" data-pick="${id}" ${done?"disabled":""}>${esc(C[id].name)}</button>`;
+    const tag = done?(id===c.id?"Culprit":id===c.picked?"Innocent":""):"Suspect "+(i+1);
+    return `<button class="${cls}" data-pick="${id}" ${done?"disabled":""}><span class="av" style="background:${AVC[i]}">${esc(C[id].name.slice(0,2))}</span><span class="who">${esc(C[id].name)}<small>${tag}</small></span></button>`;
   }).join("");
   let result = "";
   if(done){
     const ok = c.picked===c.id, got = G.results[G.results.length-1].stars;
+    const cheers = ["Nice work","Great detective work","Case cracked","Sharp eyes"];
     result = `<section class="result" id="result">
+      <span class="stamp ${ok?"ok":"no"}">${ok?"CASE CLOSED":"WRONG SUSPECT"}</span>
       <div class="hd ${ok?"ok":"no"}">
-        <p class="big">${ok?`Correct! ${starStr(got)}`:"Not quite"}</p>
-        <p>${ok?`It’s <b>${esc(ch.name)}</b>.`:`You picked ${esc(C[c.picked].name)}. The answer is <b>${esc(ch.name)}</b>.`}</p>
+        <p class="big">${ok?starStr(got):"Not quite"}</p>
+        <p>${ok?`${cheers[G.i%4]}, ${esc(det())}! It was <b>${esc(ch.name)}</b>.`:`${esc(C[c.picked].name)} is innocent. The real culprit was <b>${esc(ch.name)}</b>.`}</p>
       </div>
+      ${ok&&G.streak>=3?`<p class="roll">${G.streak} cases in a row. You’re on a roll!</p>`:""}
       <p class="trick">Remember: ${esc(ch.trick)}</p>
       <dl class="facts">
         <div><dt>What is it?</dt><dd>${esc(ch.kind)}</dd></div>
@@ -255,15 +325,16 @@ function draw(){
         <div><dt>If it goes wrong</dt><dd>${esc(ch.off)}</dd></div>
       </dl>
     </section>
-    <button class="btn" data-act="next" id="nextBtn">${G.i+1<G.order.length?"Next case →":"See my score →"}</button>`;
+    <button class="btn" data-act="next" id="nextBtn">${G.i+1<G.order.length?"Next case →":"See my detective rank →"}</button>`;
   }
   app.innerHTML = `
-    <div class="top"><span>Case ${G.i+1} of ${G.order.length}</span><span class="stars">${G.stars} ★</span></div>
+    <div class="top"><span>${esc(det())}</span><span>${G.streak?`<span class="streak">Streak ${G.streak}</span> · `:""}<span class="stars">${G.stars} ★</span></span></div>
     <div class="track"><i style="--p:${G.i/G.order.length}"></i></div>
-    <h2>Who am I?</h2>
+    <div class="file"><span class="tab">CASE #${String(G.i+1).padStart(2,"0")} OF ${G.order.length}</span><span class="conf">TOP SECRET</span>
+      <p class="story">${esc(STORY[c.id])}</p></div>
     <div class="clues">${clues}</div>
-    ${!done&&c.shown<ch.clues.length?`<button class="more" data-act="clue">+ Show another clue</button>`:""}
-    ${!done?`<p class="worth">Guess now for <b>${starStr(worth)}</b></p>`:""}
+    ${!done&&c.shown<ch.clues.length?`<button class="more" data-act="clue">${ICON.glass} Search for another clue</button>`:""}
+    <div class="lineup-h"><h3>${done?"The lineup":"Who did it?"}</h3>${!done?`<p class="worth">Accuse now for <b>${starStr(worth)}</b></p>`:""}</div>
     <div class="opts">${opts}</div>
     ${result}`;
   if(done){const r=document.getElementById("result");r.scrollIntoView({behavior:"smooth",block:"start"});}
@@ -273,6 +344,7 @@ function pick(id){
   c.picked = id;
   const ok = id===c.id, s = ok?(c.shown<=1?3:c.shown===2?2:1):0;
   G.stars += s;
+  G.streak = ok?G.streak+1:0;
   G.results.push({id:c.id,ok,stars:s});
   draw();
 }
@@ -280,16 +352,19 @@ function end(){
   saveBest(G.stars);
   const right = G.results.filter(r=>r.ok).length;
   const missed = G.results.filter(r=>!r.ok);
+  const [,rk,msg] = rankFor(G.stars);
   app.innerHTML = `
-    <h2 style="text-align:center">Shift complete!</h2>
-    <p class="score">${G.stars} ★<small>You got ${right} out of ${G.results.length} right</small></p>
-    ${missed.length?`<h2 style="font-size:22px">Practice these</h2>
+    <div class="rank">${ICON.badge(110,"#e6be7a")}
+      <p style="font-family:var(--f-mono);letter-spacing:.14em;color:var(--muted)">SHIFT COMPLETE</p>
+      <p class="r">${esc(rk)}</p>
+      <p>${esc(det())}, ${esc(msg.charAt(0).toLowerCase()+msg.slice(1))}</p></div>
+    <p class="score">${G.stars} ★<small>${right} of ${G.results.length} cases solved</small></p>
+    ${missed.length?`<h2 style="font-size:22px">Cold cases to practice</h2>
       <div class="list">${missed.map(r=>`<div><b>${esc(C[r.id].name)}</b><span>${esc(C[r.id].trick)}</span></div>`).join("")}</div>`
-      :`<p class="lead" style="text-align:center">Perfect shift. Every case solved!</p>`}
-    <button class="btn" data-act="start" id="againBtn">Play again</button>
+      :`<p class="lead" style="text-align:center">Every case solved. Brain City thanks you!</p>`}
+    <button class="btn" data-act="again" id="againBtn">Start another shift</button>
     <button class="btn soft" data-act="home">Home</button>`;
   window.scrollTo(0,0);
-  document.getElementById("againBtn").focus();
 }
 
 document.addEventListener("click",e=>{
@@ -297,6 +372,7 @@ document.addEventListener("click",e=>{
   if(b.dataset.pick){pick(b.dataset.pick);return;}
   const a = b.dataset.act;
   if(a==="start") start();
+  else if(a==="again"){const n=G.name;G={name:n};start();}
   else if(a==="home") home();
   else if(a==="clue"){G.cur.shown++;draw();}
   else if(a==="next"){G.i++; G.i<G.order.length?newCase():end();}
